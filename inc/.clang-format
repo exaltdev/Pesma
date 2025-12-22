@@ -1,0 +1,89 @@
+
+# Header-specific clang-format
+
+# Indentation and tabs
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+# Column limit
+ColumnLimit: 100
+
+# Alignments
+AlignAfterOpenBracket: true       # Align arguments after '('
+AlignArrayOfStructures: Left      # Align array-of-struct columns to left
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: true
+AlignConsecutiveDeclarations:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: true
+AlignConsecutiveBitFields:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: true
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: true
+
+# Braces and wrapping
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterStruct: false
+  AfterUnion: false
+  AfterEnum: false
+  AfterControlStatement: Never
+  BeforeElse: true
+  BeforeWhile: true
+
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+AllowShortEnumsOnASingleLine: false
+
+# Bin packing
+BinPackArguments: false       # each function argument on its own line
+BinPackParameters: false
+
+# Spaces
+SpaceBeforeParens: Custom
+SpaceBeforeParensOptions:
+  AfterFunctionDeclarationName: true
+  AfterFunctionDefinitionName: false
+  AfterControlStatements: false
+SpacesInContainerLiterals: true
+SpacesInParens: Never
+SpacesInAngles: Never
+SpaceBeforeAssignmentOperators: true
+
+# Includes
+IncludeBlocks: Preserve
+SortIncludes: false
+SortUsingDeclarations: false
+
+# Utilities
+IndentPPDirectives: BeforeHash
+MaxEmptyLinesToKeep: 2
+InsertNewlineAtEOF: true
+ReflowComments: Never
+
+# Typed literals
+IntegerLiteralSeparator:
+  Binary: 4
+  Decimal: 3
+  DecimalMinDigits: 6
+  Hex: 2
+
+# Other header-specific tweaks
+BreakFunctionDefinitionParameters: true   # break each parameter on a new line
+BreakConstructorInitializers: AfterColon
+ContinuationIndentWidth: 4
+PointerAlignment: Left
+ReferenceAlignment: Pointer
