@@ -6,10 +6,8 @@
 #include <stdbool.h>
 #include <sys/types.h>
 
-/* Opaque handle type */
-typedef struct PHandle PHandle;
-
-/* Handle type enums */
+#include "pesma_types.h"
+/* Handle type enums
 typedef enum {
     P_TYPE_NONE = 0,
     P_TYPE_SOCKET,
@@ -28,7 +26,9 @@ typedef enum {
     PESMA_BUFFER_READ,
     PESMA_BUFFER_WRITE
 } PBufferType;
+*/
 
+#include "pesma_internal.h"
 
 /* TCP
 Create TCP client/server and perform I/O */

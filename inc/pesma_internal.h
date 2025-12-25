@@ -1,9 +1,12 @@
 #ifndef PESMA_INTERNAL_H
 #define PESMA_INTERNAL_H
 
-#include "pesma.h"
 #include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include <stdlib.h>
+
+#include "pesma_types.h"
 
 /* Shared read/write buffer */
 typedef struct {
@@ -39,6 +42,7 @@ struct PHandle {
     } backend;
 };
 
+typedef struct PHandle PHandle;
 /* Internal helper functions */
 int internal_flush (PHandle* handle);
 ssize_t pesma_write_buffer_load (PHandle* handle, const void* data, size_t len); // append to write buffer

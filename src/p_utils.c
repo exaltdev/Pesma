@@ -1,4 +1,4 @@
-#include "pesma_internal.h"
+#include "pesma.h"
 #include <stdlib.h>
 #include <stdbool.h>
 

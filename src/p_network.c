@@ -1,51 +1,70 @@
+#include "pesma.h"
 #include "pesma_internal.h"
-#include <stdlib.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
 /* TCP */
 
-PHandle* pesma_tcp_client_create(const char* dns_address, uint16_t port) {
+PHandle* pesma_tcp_client_create(const char* dns_address, uint16_t port)
+{
+    int sockServ;
+    PHandle* handle;
+    handle = malloc(sizeof handle);
+    handle->type = P_TYPE_SOCKET;
+    sockServ = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     return NULL;
 }
 
-int pesma_tcp_connect(PHandle* handle) {
+int pesma_tcp_connect(PHandle* handle)
+{
     return 0;
 }
 
-PHandle* pesma_tcp_server_create(uint16_t port) {
+PHandle* pesma_tcp_server_create(uint16_t port)
+{
     return NULL;
 }
 
-PHandle* pesma_tcp_accept(PHandle* handle) {
+PHandle* pesma_tcp_accept(PHandle* handle)
+{
     return NULL;
 }
 
-bool pesma_handle_connected(PHandle* handle) {
+bool pesma_handle_connected(PHandle* handle)
+{
     return false;
 }
 
-ssize_t pesma_tcp_send(PHandle* handle, const void* data, size_t len) {
+ssize_t pesma_tcp_send(PHandle* handle, const void* data, size_t len)
+{
     return 0;
 }
 
-ssize_t pesma_tcp_receive(PHandle* handle, void* buffer, size_t len) {
+ssize_t pesma_tcp_receive(PHandle* handle, void* buffer, size_t len)
+{
     return 0;
 }
 
 /* UDP */
 
-PHandle* pesma_udp_create(const char* dns_address, uint16_t port) {
+PHandle* pesma_udp_create(const char* dns_address, uint16_t port)
+{
     return NULL;
 }
 
-int pesma_udp_connect(PHandle* handle) {
+int pesma_udp_connect(PHandle* handle)
+{
     return 0;
 }
 
-ssize_t pesma_udp_send(PHandle* handle, const void* data, size_t len) {
+ssize_t pesma_udp_send(PHandle* handle, const void* data, size_t len)
+{
     return 0;
 }
 
-ssize_t pesma_udp_receive(PHandle* handle, void* buffer, size_t len) {
+ssize_t pesma_udp_receive(PHandle* handle, void* buffer, size_t len)
+{
     return 0;
 }
