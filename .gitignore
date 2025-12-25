@@ -53,3 +53,11 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# clang caches and format
+*.cache
+*.clang-format
+
+# compile commands
+compile_commands.json
+compile_commands.json
