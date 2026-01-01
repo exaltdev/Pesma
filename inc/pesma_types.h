@@ -3,10 +3,10 @@
 
 /* Handle type enums */
 typedef enum {
-    P_TYPE_NONE = 0,
     P_TYPE_SOCKET,
     P_TYPE_FILE,
-    P_TYPE_BUFFER
+    P_TYPE_BUFFER,
+    P_TYPE_FIFO
 } PType;
 
 typedef enum {

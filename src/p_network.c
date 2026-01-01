@@ -1,19 +1,38 @@
 #include "pesma.h"
-#include "pesma_internal.h"
+#include <fcntl.h>
+#include <netinet/in.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 
 /* TCP */
+int pesma_internal_socket_create(bool type, uint16_t port)
+{
+    uint32_t sock;
+    if(type) {
+       sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    }
+    else {
+        sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    }
+    int err;
+    if(fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
+        exit(1);
+    }
+
+    return sock;
+}
 
 PHandle* pesma_tcp_client_create(const char* dns_address, uint16_t port)
 {
-    int sockServ;
+    uint32_t sockServ;
     PHandle* handle;
-    handle = malloc(sizeof handle);
+
+    sockServ = pesma_internal_socket_create(1, port);
+    handle = malloc(sizeof(*handle));
     handle->type = P_TYPE_SOCKET;
-    sockServ = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+    sockServ = pesma_internal_socket_create(0, port);
     return NULL;
 }
 
