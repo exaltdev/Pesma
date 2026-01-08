@@ -18,7 +18,7 @@ TEST = $(SDIR)/pesma_test.c
 $(shell mkdir -p $(ODIR) $(BDIR))
 
 # Default target: build and run test
-all: compile_commands_test
+all: pesma_test
 
 # Compile object files for the library
 $(ODIR)/%.o: $(SDIR)/%.c
@@ -32,13 +32,7 @@ $(BDIR)/libpesma.so: $(OBJ)
 pesma_test: $(BDIR)/libpesma.so $(TEST)
 	$(CC) $(TEST) -o $@ $(CFLAGS) $(LDFLAGS) -lpesma
 
-# Generate compile_commands.json automatically
-compile_commands_test: $(OBJ) $(TEST)
-	bear -- $(MAKE) pesma_test
-
-compile_commands: $(OBJ) $(TEST)
-	bear -- $(MAKE)$ (BDIR)/libpesma.so
 # Clean
 .PHONY: clean all
 clean:
-	rm -rf $(ODIR)/*.o $(BDIR)/libpesma.so pesma_test compile_commands.json *~ core
+	rm -rf $(ODIR)/*.o $(BDIR)/libpesma.so pesma_test *~ core

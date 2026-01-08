@@ -60,3 +60,4 @@ dkms.conf
 
 # compile commands
 compile_commands.json
+compile_commands_save.json

@@ -5,30 +5,27 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <sys/types.h>
+#include <string.h>
 
-#include "pesma_types.h"
-/* Handle type enums
+/* Handle type enums */
 typedef enum {
-    P_TYPE_NONE = 0,
     P_TYPE_SOCKET,
     P_TYPE_FILE,
-    P_TYPE_BUFFER
+    P_TYPE_BUFFER,
+    P_TYPE_FIFO
 } PType;
 
 typedef enum {
-    P_SOCKET_TCP_CLIENT,
-    P_SOCKET_TCP_SERVER,
-    P_SOCKET_TCP_CONNECTION,
-    P_SOCKET_UDP
+    P_TCP_SERVER,
+    P_TCP_CLIENT,
+    P_TCP_CONNECTION,
+    P_UDP
 } PSocketType;
-
-typedef enum {
-    PESMA_BUFFER_READ,
-    PESMA_BUFFER_WRITE
-} PBufferType;
-*/
+#define PESMA_TYPES // include here for internal file
 
 #include "pesma_internal.h"
+
+#define SOCKET_BUFFER_SIZE 65536
 
 /* TCP
 Create TCP client/server and perform I/O */
@@ -56,9 +53,9 @@ long     pesma_file_tell (PHandle* handle);                           // get cur
 ssize_t  pesma_file_read (PHandle* handle, void* buffer, size_t len); // read from file
 ssize_t  pesma_file_write (PHandle* handle, const void* buffer, size_t len); // write to file
 
-/* Memory buffer (FIFO)
-Optional future in-memory buffer */
-PHandle* pesma_buffer_create (size_t capacity);                           // create memory buffer
+/* Memory buffer
+Initializers and read/write into buffers*/
+PHandle*  pesma_buffer_create (size_t capacity);                           // create memory buffer
 ssize_t  pesma_buffer_get (PHandle* handle, void* dst, size_t len);       // read from buffer
 ssize_t  pesma_buffer_set (PHandle* handle, const void* src, size_t len); // write to buffer
 
@@ -67,7 +64,7 @@ Query type/state, network wait, buffer operations */
 PType pesma_handle_get_type (PHandle* handle); // get handle type
 int   pesma_network_wait (PHandle* handle, bool wait_for_read, bool wait_for_write, int timeout_ms); // wait until readable/writable
 int   pesma_handle_free (PHandle* handle); // close socket/file/buffer and free
-int   pesma_buffer_clear (PHandle* handle, PBufferType type); // clears selected buffer in handle
+int   pesma_buffer_clear (PHandle* handle, bool type); // clears selected buffer in handle
 
 /* Typed read/write helpers
 Write basic types or strings */

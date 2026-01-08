@@ -5,7 +5,7 @@
 /* Utilities */
 
 PType pesma_handle_get_type(PHandle* handle) {
-    return P_TYPE_NONE;
+    return 0;
 }
 
 int pesma_network_wait(PHandle* handle, bool wait_for_read, bool wait_for_write, int timeout_ms) {
@@ -16,7 +16,7 @@ int pesma_handle_free(PHandle* handle) {
     return 0;
 }
 
-int pesma_buffer_clear(PHandle* handle, PBufferType type) {
+int pesma_buffer_clear(PHandle* handle, bool type) {
     return 0; 
 }
 
