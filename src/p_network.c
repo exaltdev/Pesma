@@ -1,9 +1,10 @@
 #include "pesma.h"
-#include <string.h>
+
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 
@@ -15,7 +16,7 @@ int pesma_internal_socket_create(bool type, uint16_t port)
     struct sockaddr_in addr;
 
     void* temp = memset(&addr, 0, sizeof(struct sockaddr));
-    
+
     if(type) {
         sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     }
@@ -88,9 +89,8 @@ PHandle* pesma_tcp_accept(PHandle* handle)
     uint32_t addr_size;
     struct sockaddr_in client_addr;
 
-    if((sockCli = accept(handle->backend.socket.socket_fd,
-            (struct sockaddr*) &client_addr,
-            &addr_size)) != 0) {
+    if((sockCli = accept(
+            handle->backend.socket.socket_fd, (struct sockaddr*) &client_addr, &addr_size)) != 0) {
         exit(1);  //checkerr
     }
 
@@ -103,12 +103,12 @@ bool pesma_handle_connected(PHandle* handle)
     return false;
 }
 
-ssize_t  pesma_tcp_send (PHandle* handle, size_t len)
+ssize_t pesma_tcp_send(PHandle* handle, size_t len)
 {
     return 0;
 }
 
-ssize_t  pesma_tcp_receive (PHandle* handle, size_t len)
+ssize_t pesma_tcp_receive(PHandle* handle, size_t len)
 {
     return 0;
 }
@@ -125,12 +125,12 @@ int pesma_udp_connect(PHandle* handle)
     return 0;
 }
 
-ssize_t  pesma_udp_send (PHandle* handle, size_t len)
+ssize_t pesma_udp_send(PHandle* handle, size_t len)
 {
     return 0;
 }
 
-ssize_t  pesma_udp_receive (PHandle* handle, size_t len)
+ssize_t pesma_udp_receive(PHandle* handle, size_t len)
 {
     return 0;
 }

@@ -29,7 +29,7 @@ ssize_t pesma_file_read(PHandle* handle, size_t len)
     return 0;
 }
 
-ssize_t  pesma_file_write (PHandle* handle, size_t len)
+ssize_t pesma_file_write(PHandle* handle, size_t len)
 {
     return 0;
 }

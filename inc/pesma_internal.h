@@ -33,7 +33,7 @@ typedef struct {
 
 /* File backend */
 typedef struct {
-    FILE* file_pointer;
+    int file_descriptor;
     char* file_path;
 } PFileInternal;
 
