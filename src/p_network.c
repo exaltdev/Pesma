@@ -103,12 +103,12 @@ bool pesma_handle_connected(PHandle* handle)
     return false;
 }
 
-ssize_t pesma_tcp_send(PHandle* handle, const void* data, size_t len)
+ssize_t  pesma_tcp_send (PHandle* handle, size_t len)
 {
     return 0;
 }
 
-ssize_t pesma_tcp_receive(PHandle* handle, void* buffer, size_t len)
+ssize_t  pesma_tcp_receive (PHandle* handle, size_t len)
 {
     return 0;
 }
@@ -125,12 +125,12 @@ int pesma_udp_connect(PHandle* handle)
     return 0;
 }
 
-ssize_t pesma_udp_send(PHandle* handle, const void* data, size_t len)
+ssize_t  pesma_udp_send (PHandle* handle, size_t len)
 {
     return 0;
 }
 
-ssize_t pesma_udp_receive(PHandle* handle, void* buffer, size_t len)
+ssize_t  pesma_udp_receive (PHandle* handle, size_t len)
 {
     return 0;
 }

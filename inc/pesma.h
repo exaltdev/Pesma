@@ -34,15 +34,15 @@ int      pesma_tcp_connect (PHandle* handle);                              // co
 PHandle* pesma_tcp_server_create (uint16_t port);                          // create TCP server
 PHandle* pesma_tcp_accept (PHandle* handle);                             // accept client connection
 bool     pesma_handle_connected (PHandle* handle);                       // check connection
-ssize_t  pesma_tcp_send (PHandle* handle, const void* data, size_t len); // send TCP data
-ssize_t  pesma_tcp_receive (PHandle* handle, void* buffer, size_t len);  // receive TCP data
+ssize_t  pesma_tcp_send (PHandle* handle, size_t len); // send TCP data
+ssize_t  pesma_tcp_receive (PHandle* handle, size_t len);  // receive TCP data
 
 /* UDP
 Create UDP handle and perform I/O */
 PHandle* pesma_udp_create (const char* dns_address, uint16_t port);      // create UDP handle
 int      pesma_udp_connect (PHandle* handle);                            // optional UDP connect
-ssize_t  pesma_udp_send (PHandle* handle, const void* data, size_t len); // send UDP data
-ssize_t  pesma_udp_receive (PHandle* handle, void* buffer, size_t len);  // receive UDP data
+ssize_t  pesma_udp_send (PHandle* handle, size_t len); // send UDP data
+ssize_t  pesma_udp_receive (PHandle* handle, size_t len);  // receive UDP data
 
 /* File
 Open, read/write, seek, size operations */
@@ -50,14 +50,14 @@ PHandle* pesma_file_open (const char* path, const char* mode);        // open or
 size_t   pesma_file_size (PHandle* handle);                           // get file size
 int      pesma_file_seek (PHandle* handle, long offset, int whence);  // seek in file
 long     pesma_file_tell (PHandle* handle);                           // get current file position
-ssize_t  pesma_file_read (PHandle* handle, void* buffer, size_t len); // read from file
-ssize_t  pesma_file_write (PHandle* handle, const void* buffer, size_t len); // write to file
+ssize_t  pesma_file_read (PHandle* handle, size_t len); // read from file
+ssize_t  pesma_file_write (PHandle* handle, size_t len); // write to file
 
 /* Memory buffer
 Initializers and read/write into buffers*/
 PHandle*  pesma_buffer_create (size_t capacity);                           // create memory buffer
-ssize_t  pesma_buffer_get (PHandle* handle, void* dst, size_t len);       // read from buffer
-ssize_t  pesma_buffer_set (PHandle* handle, const void* src, size_t len); // write to buffer
+ssize_t  pesma_buffer_get (PHandle* handle, size_t len);       // read from buffer
+ssize_t  pesma_buffer_set (PHandle* handle, size_t len); // write to buffer
 
 /* Utilities
 Query type/state, network wait, buffer operations */

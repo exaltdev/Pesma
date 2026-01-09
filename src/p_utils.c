@@ -5,7 +5,7 @@
 /* Utilities */
 
 PType pesma_handle_get_type(PHandle* handle) {
-    return 0;
+    return handle->type;
 }
 
 int pesma_network_wait(PHandle* handle, bool wait_for_read, bool wait_for_write, int timeout_ms) {
@@ -22,7 +22,19 @@ int pesma_buffer_clear(PHandle* handle, bool type) {
 
 /* Typed write helpers */
 
-ssize_t pesma_write_int8(PHandle* handle, int8_t value) { return 0; }
+ssize_t pesma_write_int8(PHandle* handle, int8_t value) {
+    uint8_t* data;
+    data = handle->write_buffer.data;
+    
+    if(handle->write_buffer.buffer_used + 1 > handle->write_buffer.buffer_size){
+        fprintf(stderr, "[PESMA] The write buffer size is to small to pack int8");
+        return 1;
+    }
+    ((int8_t*)data)[handle->write_buffer.buffer_pos] = value;
+    handle->write_buffer.buffer_used += 1;
+    handle->write_buffer.buffer_used += 1; 
+    return 0;
+}
 ssize_t pesma_write_int16(PHandle* handle, int16_t value) { return 0; }
 ssize_t pesma_write_int32(PHandle* handle, int32_t value) { return 0; }
 ssize_t pesma_write_int64(PHandle* handle, int64_t value) { return 0; }
