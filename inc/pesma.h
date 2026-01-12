@@ -83,17 +83,18 @@ ssize_t pesma_write_string (PHandle* handle, const char* str);
 
 /* Typed read helpers
 Read basic types or strings */
-ssize_t pesma_read_int8 (PHandle* handle, int8_t* value);
-ssize_t pesma_read_int16 (PHandle* handle, int16_t* value);
-ssize_t pesma_read_int32 (PHandle* handle, int32_t* value);
-ssize_t pesma_read_int64 (PHandle* handle, int64_t* value);
 
-ssize_t pesma_read_uint8 (PHandle* handle, uint8_t* value);
-ssize_t pesma_read_uint16 (PHandle* handle, uint16_t* value);
-ssize_t pesma_read_uint32 (PHandle* handle, uint32_t* value);
-ssize_t pesma_read_uint64 (PHandle* handle, uint64_t* value);
+int8_t pesma_read_int8(PHandle* handle);
+int16_t pesma_read_int16 (PHandle* handle);
+int32_t pesma_read_int32 (PHandle* handle);
+int64_t pesma_read_int64 (PHandle* handle);
 
-ssize_t pesma_read_char (PHandle* handle, char* value);
+uint8_t pesma_read_uint8 (PHandle* handle);
+uint16_t pesma_read_uint16 (PHandle* handle);
+uint32_t pesma_read_uint32 (PHandle* handle);
+uint64_t pesma_read_uint64 (PHandle* handle);
+
+char pesma_read_char (PHandle* handle);
 ssize_t pesma_read_string (PHandle* handle, char* dst, size_t max_len);
 
 #endif
