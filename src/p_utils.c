@@ -93,21 +93,21 @@ ssize_t pesma_write_char(PHandle* handle, char value)
 ssize_t pesma_write_string(PHandle* handle, const char* str)
 {
     uint8_t* data;
-    uint64_t length; 
+    uint64_t length;
     uint64_t pos;
 
     data = handle->write_buffer.data;
-    for(length = 0;str[length]!=0;length++);
+    for(length = 0; str[length] != 0; length++);
     length++;
 
     if(handle->write_buffer.buffer_used + length > handle->write_buffer.buffer_size) {
-        fprintf(stderr, "[PESMA] The write buffer size is to small to pack int8");
+        fprintf(stderr,
+            "[PESMA] The write buffer size is to small to pack the string of length %ld",
+            length);
         return 1;
     }
-    
-    for(pos = 0;pos < length;pos++){
-        data[handle->write_buffer.buffer_pos++] = str[pos];
-    }
+
+    for(pos = 0; pos < length; pos++) { data[handle->write_buffer.buffer_pos++] = str[pos]; }
 
     return 0;
 }
@@ -122,7 +122,9 @@ uint64_t pesma_internal_read(PHandle* handle, size_t size, const char* message)
     value = 0;
     data = handle->read_buffer.data;
     if(handle->read_buffer.buffer_pos + size >= handle->read_buffer.buffer_size) {
-        fprintf(stderr, "[PESMA] Attempting to read %s while there is not enough space in buffer", message);
+        fprintf(stderr,
+            "[PESMA] Attempting to read %s while there is not enough space in buffer",
+            message);
         return 1;
     }
     while(--size >= 0) {
@@ -180,14 +182,10 @@ char pesma_read_char(PHandle* handle)
 ssize_t pesma_read_string(PHandle* handle, char* dst, size_t max_len)
 {
     uint8_t* data;
-    data = handle->write_buffer.data;
+    int pos;
+    data = handle->read_buffer.data;
 
-    if(handle->write_buffer.buffer_used + 1 > handle->write_buffer.buffer_size) {
-        fprintf(stderr, "[PESMA] The write buffer size is to small to pack int8");
-        return 1;
-    }
-    ((int8_t*) data)[handle->write_buffer.buffer_pos] = value;
-    handle->write_buffer.buffer_used += 1;
-    handle->write_buffer.buffer_used += 1;
+    for(pos = 0; data[pos] != 0; pos++) { dst[pos] = data[pos]; }
+    dst[pos] = '\0';
     return 0;
 }

@@ -57,4 +57,7 @@ pesma_write_buffer_load (PHandle* handle, const void* data, size_t len); // appe
 int     pesma_internal_socket_create (bool type, uint16_t port);
 PBuffer pesma_internal_buffer_create (size_t size);
 ssize_t pesma_internal_write(PHandle* handle, size_t size, void* value, const char* message);
+uint64_t pesma_internal_read(PHandle* handle, size_t size, const char* message);
+
+
 #endif
