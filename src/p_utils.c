@@ -16,7 +16,8 @@ int pesma_network_wait(PHandle* handle, bool wait_for_read, bool wait_for_write,
 
 int pesma_handle_free(PHandle* handle)
 {
-    if(handle->type==P_TYPE_FILE) free(handle->backend.file.file_path);
+    if(handle->type == P_TYPE_FILE)
+        free(handle->backend.file.file_path);
     free(handle->write_buffer.data);
     free(handle->read_buffer.data);
     free(handle);
@@ -26,8 +27,10 @@ int pesma_handle_free(PHandle* handle)
 int pesma_buffer_clear(PHandle* handle, char type)
 {
     PBuffer* buf;
-    if(type == 'w')buf = &(handle->write_buffer);
-    else if(type == 'r')buf = &(handle->read_buffer);
+    if(type == 'w')
+        buf = &(handle->write_buffer);
+    else if(type == 'r')
+        buf = &(handle->read_buffer);
     else {
         fprintf(stderr, "[PESMA] Attempting to clear nonexistant buffer type");
         return -1;
@@ -39,7 +42,7 @@ int pesma_buffer_clear(PHandle* handle, char type)
     return 0;
 }
 
-void pesma_internal_buffers_create (PHandle* handle, size_t size)
+void pesma_internal_buffers_create(PHandle* handle, size_t size)
 {
     PBuffer* buf = &(handle->write_buffer);
     uint8_t* data = calloc(size, 1);
@@ -47,9 +50,10 @@ void pesma_internal_buffers_create (PHandle* handle, size_t size)
     buf->size = size;
     buf->pos = 0;
     buf->used = 0;
-    
+
     buf = &(handle->read_buffer);
-    if(handle->type != P_TYPE_BUFFER) data = calloc(size, 1);
+    if(handle->type != P_TYPE_BUFFER)
+        data = calloc(size, 1);
     buf->data = data;
     buf->size = size;
     buf->pos = 0;
@@ -242,7 +246,9 @@ ssize_t pesma_read_string(PHandle* handle, char* dst, size_t max_len)
     int pos;
     data = handle->read_buffer.data;
 
-    for(pos = 0; data[handle->read_buffer.pos] != 0; pos++) { dst[pos] = data[handle->read_buffer.pos++];}
+    for(pos = 0; data[handle->read_buffer.pos] != 0; pos++) {
+        dst[pos] = data[handle->read_buffer.pos++];
+    }
     dst[pos] = '\0';
     handle->read_buffer.pos++;
     return 0;

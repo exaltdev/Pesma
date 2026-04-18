@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #ifndef PESMA_TYPES
-    #define PType uint8_t
+    #define PType       uint8_t
     #define PSocketType uint8_t // shutting up the IDE (internal include remedy)
 #endif
 
@@ -32,7 +32,7 @@ typedef struct {
 
 /* File backend */
 typedef struct {
-    int file_descriptor;
+    int   file_descriptor;
     char* file_path;
 } PFileInternal;
 
@@ -53,10 +53,10 @@ typedef struct PHandle PHandle;
 int internal_flush (PHandle* handle);
 ssize_t
 pesma_write_buffer_load (PHandle* handle, const void* data, size_t len); // append to write buffer
-int     pesma_internal_socket_create (bool type, uint16_t port);
-void pesma_internal_buffers_create (PHandle* handle, size_t size);
-ssize_t pesma_internal_write(PHandle* handle, size_t size, void* value, const char* message);
-uint64_t pesma_internal_read(PHandle* handle, size_t size, const char* message);
+int      pesma_internal_socket_create (bool type, uint16_t port);
+void     pesma_internal_buffers_create (PHandle* handle, size_t size);
+ssize_t  pesma_internal_write (PHandle* handle, size_t size, void* value, const char* message);
+uint64_t pesma_internal_read (PHandle* handle, size_t size, const char* message);
 
 
 #endif

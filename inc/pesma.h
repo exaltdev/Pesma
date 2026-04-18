@@ -67,7 +67,7 @@ int   pesma_network_wait (PHandle* handle,
                           bool     wait_for_write,
                           int      timeout_ms);             // wait until readable/writable
 int   pesma_handle_free (PHandle* handle);             // close socket/file/buffer and free
-int   pesma_buffer_clear (PHandle* handle, char type); // clears selected buffer in handle
+int   pesma_buffer_clear (PHandle* handle, bool type); // clears selected buffer in handle
 
 /* Typed read/write helpers
 Write basic types or strings */

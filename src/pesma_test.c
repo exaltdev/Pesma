@@ -1,16 +1,17 @@
-#include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
-#include <sys/types.h>
-#include <string.h>
-#include <stdio.h>
 #include "pesma.h"
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
 
 int counter = 0;
 
 int tests_read_write(PHandle* handle);
 
-int main(void) {
+int main(void)
+{
     // Minimal test skeleton for pesma library
     // TODO: implement test logic here
 
@@ -21,29 +22,38 @@ int main(void) {
     return 0;
 }
 
-void test_mixed(PHandle* handle){
+void test_mixed(PHandle* handle)
+{
     char* str = "Good Luck!";
     char p = '*';
-    int8_t  i8 = -30;
+    int8_t i8 = -30;
     uint32_t u32 = 99999;
     uint16_t u16 = 12500;
     int64_t i64 = -1;
     char* str2 = "END";
 
-    printf("[TESTS] Mixed test. in order: string %s, char %c, int8 %d, uint32 %u, uint16 %u, int64 %ld, string %s\n", str,p,i8,u32,u16,i64,str2);
-    
-    pesma_write_string(handle,str);
-    pesma_write_char(handle,p);
-    pesma_write_int8(handle,i8);
-    pesma_write_uint32(handle,u32);
-    pesma_write_uint16(handle,u16);
-    pesma_write_int64(handle,i64);
-    pesma_write_string(handle,str2);
+    printf("[TESTS] Mixed test. in order: string %s, char %c, int8 %d, uint32 %u, uint16 %u, int64 "
+           "%ld, string %s\n",
+        str,
+        p,
+        i8,
+        u32,
+        u16,
+        i64,
+        str2);
+
+    pesma_write_string(handle, str);
+    pesma_write_char(handle, p);
+    pesma_write_int8(handle, i8);
+    pesma_write_uint32(handle, u32);
+    pesma_write_uint16(handle, u16);
+    pesma_write_int64(handle, i64);
+    pesma_write_string(handle, str2);
 
     printf(" [TESTS] Mixed test. outputs in order:");
 
     char buf[1024];
-    pesma_read_string(handle,buf,strlen(str));
+    pesma_read_string(handle, buf, strlen(str));
     printf("%s", buf);
 
     printf("%c,", pesma_read_char(handle));
@@ -52,21 +62,22 @@ void test_mixed(PHandle* handle){
     printf("%u,", pesma_read_uint16(handle));
     printf("%ld,", pesma_read_int64(handle));
 
-    pesma_read_string(handle,buf,strlen(str2));
+    pesma_read_string(handle, buf, strlen(str2));
     printf("%s", buf);
 
     pesma_buffer_clear(handle, 'w');
     pesma_buffer_clear(handle, 'r');
-    
+
     return;
 }
 
-void test_string(PHandle* handle){
+void test_string(PHandle* handle)
+{
     char* s1 = "Hello World!\n";
     char* s2 = "Test Test 123 123\n";
     char* s3 = "This is a C library\n";
 
-    printf("[TESTS] String testing, string input order: %s,%s,%s\n",s1,s2,s3);
+    printf("[TESTS] String testing, string input order: %s,%s,%s\n", s1, s2, s3);
 
     pesma_write_string(handle, s1);
     pesma_write_string(handle, s2);
@@ -75,25 +86,25 @@ void test_string(PHandle* handle){
     printf("[TESTS] string testing, tring output order: ");
 
     char buf[1028];
-    
-    pesma_read_string(handle,buf,strlen(s1));
+
+    pesma_read_string(handle, buf, strlen(s1));
     printf("%s", buf);
-    memset(buf,0,1028);
-    pesma_read_string(handle,buf,strlen(s2));
+    memset(buf, 0, 1028);
+    pesma_read_string(handle, buf, strlen(s2));
     printf("%s", buf);
-    memset(buf,0,1028);
-    pesma_read_string(handle,buf,strlen(s3));
+    memset(buf, 0, 1028);
+    pesma_read_string(handle, buf, strlen(s3));
     printf("%s\n", buf);
-    memset(buf,0,1028);
-    
+    memset(buf, 0, 1028);
+
     pesma_buffer_clear(handle, 'w');
     pesma_buffer_clear(handle, 'r');
-    
-    return;
 
+    return;
 }
 
-void test_uint16(PHandle* handle){
+void test_uint16(PHandle* handle)
+{
     printf("[TESTS] Uint16 testing, uint16 input order: 203,17,58\n");
 
     pesma_write_uint16(handle, 203);
@@ -101,19 +112,19 @@ void test_uint16(PHandle* handle){
     pesma_write_uint16(handle, 58);
 
     printf("[TESTS] Uint16 testing, uint16 output order: ");
-    
+
     printf("%d,", pesma_read_uint16(handle));
     printf("%d,", pesma_read_uint16(handle));
     printf("%d\n", pesma_read_uint16(handle));
-    
+
     pesma_buffer_clear(handle, 'w');
     pesma_buffer_clear(handle, 'r');
-    
-    return;
 
+    return;
 }
 
-void test_char(PHandle* handle){
+void test_char(PHandle* handle)
+{
     printf("[TESTS] Char testing, chars input order: c,b,a\n");
 
     pesma_write_char(handle, 'c');
@@ -121,21 +132,22 @@ void test_char(PHandle* handle){
     pesma_write_char(handle, 'a');
 
     printf("[TESTS] Char testing, chars output order: ");
-    
+
     printf("%c,", pesma_read_char(handle));
     printf("%c,", pesma_read_char(handle));
     printf("%c\n", pesma_read_char(handle));
-   
+
     pesma_buffer_clear(handle, 'w');
     pesma_buffer_clear(handle, 'r');
-    
+
     return;
 }
 
-int tests_read_write(PHandle* handle){
-   test_char(handle);
-   test_uint16(handle);
-   test_string(handle);
-   test_mixed(handle);
-   return 0;
+int tests_read_write(PHandle* handle)
+{
+    test_char(handle);
+    test_uint16(handle);
+    test_string(handle);
+    test_mixed(handle);
+    return 0;
 }

@@ -71,7 +71,7 @@ PHandle* pesma_tcp_server_create(uint16_t port)
     memset(handle, 0, sizeof(PHandle));
 
     handle->type = P_TYPE_SOCKET;
-    
+
     pesma_internal_buffers_create(handle, P_SOCKET_BUFFER_SIZE);
 
     handle->backend.socket.port = port;
@@ -90,8 +90,8 @@ PHandle* pesma_tcp_accept(PHandle* handle)
     uint32_t addr_size;
     struct sockaddr_in client_addr;
 
-    if((sockCli = accept(
-            handle->backend.socket.fd, (struct sockaddr*) &client_addr, &addr_size)) != 0) {
+    if((sockCli = accept(handle->backend.socket.fd, (struct sockaddr*) &client_addr, &addr_size)) !=
+        0) {
         exit(1);  //checkerr
     }
 
