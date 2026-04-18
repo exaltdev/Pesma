@@ -8,8 +8,7 @@
 
 #ifndef PESMA_TYPES
     #define PType uint8_t
-    #define PSocketType                                                                            \
-        uint8_t // shutting up the IDE (include preprocessor directive is copy paste anyway)
+    #define PSocketType uint8_t // shutting up the IDE (internal include remedy)
 #endif
 
 #define P_SOCKET_BUFFER_SIZE 65536
@@ -17,17 +16,17 @@
 /* Shared read/write buffer */
 typedef struct {
     uint8_t* data;
-    size_t   buffer_size;
-    size_t   buffer_used;
-    size_t   buffer_pos;
+    size_t   size;
+    size_t   used;
+    size_t   pos;
 } PBuffer;
 
 /* Socket backend */
 typedef struct {
-    int         socket_fd;
+    int         fd;
     int         ip_address;
     uint16_t    port;
-    PSocketType socket_type;
+    PSocketType type;
     bool        is_connected;
 } PSocketInternal;
 
@@ -55,7 +54,7 @@ int internal_flush (PHandle* handle);
 ssize_t
 pesma_write_buffer_load (PHandle* handle, const void* data, size_t len); // append to write buffer
 int     pesma_internal_socket_create (bool type, uint16_t port);
-PBuffer pesma_internal_buffer_create (size_t size);
+void pesma_internal_buffers_create (PHandle* handle, size_t size);
 ssize_t pesma_internal_write(PHandle* handle, size_t size, void* value, const char* message);
 uint64_t pesma_internal_read(PHandle* handle, size_t size, const char* message);
 

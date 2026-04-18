@@ -1,5 +1,10 @@
-#include "pesma_internal.h"
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
+#include <sys/types.h>
+#include <string.h>
 #include <stdio.h>
+#include "pesma.h"
 
 int main(void) {
     // Minimal test skeleton for pesma library

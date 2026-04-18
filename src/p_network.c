@@ -51,6 +51,8 @@ PHandle* pesma_tcp_client_create(const char* dns_address, uint16_t port)
     memset(handle, 0, sizeof(PHandle));
     handle->type = P_TYPE_SOCKET;
     sockServ = pesma_internal_socket_create(0, port);
+
+    //TODO: Unfinished, setup similar logic to the server create.
     return NULL;
 }
 
@@ -69,13 +71,12 @@ PHandle* pesma_tcp_server_create(uint16_t port)
     memset(handle, 0, sizeof(PHandle));
 
     handle->type = P_TYPE_SOCKET;
-
-    handle->read_buffer = pesma_internal_buffer_create(P_SOCKET_BUFFER_SIZE);
-    handle->write_buffer = pesma_internal_buffer_create(P_SOCKET_BUFFER_SIZE);
+    
+    pesma_internal_buffers_create(handle, P_SOCKET_BUFFER_SIZE);
 
     handle->backend.socket.port = port;
-    handle->backend.socket.socket_type = 0;
-    handle->backend.socket.socket_fd = sockServ;
+    handle->backend.socket.type = 0;
+    handle->backend.socket.fd = sockServ;
     handle->backend.socket.ip_address = 0;
     handle->backend.socket.is_connected = false;
 
@@ -90,7 +91,7 @@ PHandle* pesma_tcp_accept(PHandle* handle)
     struct sockaddr_in client_addr;
 
     if((sockCli = accept(
-            handle->backend.socket.socket_fd, (struct sockaddr*) &client_addr, &addr_size)) != 0) {
+            handle->backend.socket.fd, (struct sockaddr*) &client_addr, &addr_size)) != 0) {
         exit(1);  //checkerr
     }
 

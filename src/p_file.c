@@ -4,9 +4,21 @@
 
 /* File operations */
 
+int pesma_internal_parse_mode(const char* mode){
+    int flags = 0;
+    int index = 0;
+    
+    return flags;
+}
+
 PHandle* pesma_file_open(const char* path, const char* mode)
 {
     return NULL;
+}
+
+PHandle* pesma_fifo_create (const char* path, const char* mode)
+{
+    return 0;
 }
 
 size_t pesma_file_size(PHandle* handle)
@@ -31,5 +43,5 @@ ssize_t pesma_file_read(PHandle* handle, size_t len)
 
 ssize_t pesma_file_write(PHandle* handle, size_t len)
 {
-    return 0;
+    
 }

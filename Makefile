@@ -6,7 +6,7 @@ BDIR = build
 
 # Compiler & flags
 CC = gcc
-CFLAGS = -g -I$(IDIR)
+CFLAGS = -g -I$(IDIR) -std=c99
 LDFLAGS = -L$(BDIR) -Wl,-rpath=$(BDIR)
 
 # Sources
@@ -18,7 +18,7 @@ TEST = $(SDIR)/pesma_test.c
 $(shell mkdir -p $(ODIR) $(BDIR))
 
 # Default target: build and run test
-all: pesma_test
+all: $(BDIR)/pesma_test
 
 # Compile object files for the library
 $(ODIR)/%.o: $(SDIR)/%.c
@@ -29,7 +29,7 @@ $(BDIR)/libpesma.so: $(OBJ)
 	$(CC) -shared -o $@ $^
 
 # Build test executable
-pesma_test: $(BDIR)/libpesma.so $(TEST)
+$(BDIR)/pesma_test: $(BDIR)/libpesma.so $(TEST)
 	$(CC) $(TEST) -o $@ $(CFLAGS) $(LDFLAGS) -lpesma
 
 # Clean
