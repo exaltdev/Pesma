@@ -50,6 +50,7 @@ void pesma_internal_buffers_create (PHandle* handle, size_t size)
     
     buf = &(handle->read_buffer);
     if(handle->type != P_TYPE_BUFFER) data = calloc(size, 1);
+    buf->data = data;
     buf->size = size;
     buf->pos = 0;
     buf->used = 0;
@@ -63,15 +64,17 @@ ssize_t pesma_internal_write(PHandle* handle, size_t size, void* value, const ch
     uint8_t* data;
     uint8_t byte;
     uint64_t casted_value;
+    int counter;
 
+    counter = size;
     data = handle->write_buffer.data;
     if(handle->write_buffer.pos + size >= handle->write_buffer.size) {
         fprintf(stderr, "[PESMA] The write buffer size is to small to write %s", message);
         return 1;
     }
     casted_value = *(uint64_t*) value;
-    while(--size >= 0) {
-        uint8_t byte = (casted_value >> size * 8) & 0xFF;
+    while(--counter >= 0) {
+        uint8_t byte = (casted_value >> counter * 8) & 0xFF;
         data[handle->write_buffer.pos++] = byte;
     }
     return 0;
@@ -160,7 +163,9 @@ uint64_t pesma_internal_read(PHandle* handle, size_t size, const char* message)
 {
     uint64_t value;
     uint8_t* data;
+    int counter;
 
+    counter = size;
     value = 0;
     data = handle->read_buffer.data;
     if(handle->read_buffer.pos + size >= handle->read_buffer.size) {
@@ -169,9 +174,9 @@ uint64_t pesma_internal_read(PHandle* handle, size_t size, const char* message)
             message);
         return 1;
     }
-    while(--size >= 0) {
+    while(--counter >= 0) {
         uint8_t byte = data[handle->read_buffer.pos++];
-        value |= byte << size * 8;
+        value |= byte << counter * 8;
     }
     return value;
 }
@@ -237,7 +242,8 @@ ssize_t pesma_read_string(PHandle* handle, char* dst, size_t max_len)
     int pos;
     data = handle->read_buffer.data;
 
-    for(pos = 0; data[pos] != 0; pos++) { dst[pos] = data[pos]; }
+    for(pos = 0; data[handle->read_buffer.pos] != 0; pos++) { dst[pos] = data[handle->read_buffer.pos++];}
     dst[pos] = '\0';
+    handle->read_buffer.pos++;
     return 0;
 }

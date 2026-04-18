@@ -7,7 +7,7 @@ BDIR = build
 # Compiler & flags
 CC = gcc
 CFLAGS = -g -I$(IDIR) -std=c99
-LDFLAGS = -L$(BDIR) -Wl,-rpath=$(BDIR)
+LDFLAGS = -L$(BDIR) -Wall -Wextra -Wl,-rpath=$(BDIR)
 
 # Sources
 SRC = p_buffer.c p_file.c p_network.c p_utils.c
