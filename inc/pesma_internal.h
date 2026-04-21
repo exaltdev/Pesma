@@ -32,8 +32,8 @@ typedef struct {
 
 /* File backend */
 typedef struct {
-    int   file_descriptor;
-    char* file_path;
+    int   descriptor;
+    char* path;
 } PFileInternal;
 
 /* Handle struct */

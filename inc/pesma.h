@@ -26,6 +26,7 @@ typedef enum {
 #include "pesma_internal.h"
 
 #define SOCKET_BUFFER_SIZE 65536
+#define FILE_BUFFER_SIZE 65536
 
 /* TCP
 Create TCP client/server and perform I/O */
