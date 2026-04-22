@@ -48,6 +48,11 @@ void test_write(){
     PHandle* handle = pesma_file_open("writeme.txt", "rwc");
     pesma_write_string(handle, "characters");
     pesma_file_write(handle, 10);
+    pesma_write_char(handle,'\n');
+    pesma_write_uint64(handle, 99999999);
+    pesma_write_int64(handle, -99999999);
+    pesma_file_write(handle,17);
+
     return;
 }
 

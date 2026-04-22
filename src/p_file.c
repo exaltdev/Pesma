@@ -69,10 +69,14 @@ long pesma_file_tell(PHandle* handle)
 
 ssize_t pesma_file_read(PHandle* handle, size_t len)
 {
-    return read(handle->backend.file.fd, handle->read_buffer.data, len);
+    ssize_t ret = read(handle->backend.file.fd, handle->read_buffer.data, len); 
+    pesma_buffer_clear(handle,'r');
+    return ret;
 }
 
 ssize_t pesma_file_write(PHandle* handle, size_t len)
 {
-    return write(handle->backend.file.fd, handle->write_buffer.data, len);
+    ssize_t ret = write(handle->backend.file.fd, handle->write_buffer.data, len); 
+    pesma_buffer_clear(handle,'w');
+    return ret;
 }
