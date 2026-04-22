@@ -65,5 +65,8 @@ compile_commands_save.json
 # todo selfreference
 todos.log
 
+# test helpers
+*.txt
+
 # build dir
 build/*

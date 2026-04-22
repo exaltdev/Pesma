@@ -32,7 +32,7 @@ typedef struct {
 
 /* File backend */
 typedef struct {
-    int   descriptor;
+    int   fd;
     char* path;
 } PFileInternal;
 

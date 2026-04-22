@@ -3,12 +3,11 @@ IDIR = inc
 SDIR = src
 ODIR = $(SDIR)/obj
 BDIR = build
-LDIR = libs
 
 # Compiler & flags
 CC = gcc
-CFLAGS = -g -I$(IDIR) -std=c99 -Wall -Wextra
-LDFLAGS = -L$(BDIR) -Wl,-rpath=$(LDIR)
+CFLAGS = -g -I$(IDIR) -std=c99
+LDFLAGS = -L$(BDIR) -Wl,-rpath=$(BDIR)
 
 # Sources
 SRC = p_buffer.c p_file.c p_network.c p_utils.c
@@ -26,7 +25,7 @@ $(ODIR)/%.o: $(SDIR)/%.c
 	$(CC) -fPIC -c $< -o $@ $(CFLAGS)
 
 # Build shared library
-$(BDIR)/$(LDIR)/libpesma.so: $(OBJ)
+$(BDIR)/libpesma.so: $(OBJ)
 	$(CC) -shared -o $@ $^
 
 # Build test executable

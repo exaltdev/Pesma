@@ -1,6 +1,7 @@
 #include "pesma.h"
 #include <stdbool.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 /* Utilities */
 
@@ -16,10 +17,13 @@ int pesma_network_wait(PHandle* handle, bool wait_for_read, bool wait_for_write,
 
 int pesma_handle_free(PHandle* handle)
 {
-    if(handle->type == P_TYPE_FILE)
-        free(handle->backend.file.file_path);
+    //TODO: Cleaner logic here.
+    if(handle->type == P_TYPE_FILE){
+        free(handle->backend.file.path);
+        close(handle->backend.file.fd);
+    }
     free(handle->write_buffer.data);
-    free(handle->read_buffer.data);
+    if(!(handle->type == P_TYPE_BUFFER))free(handle->read_buffer.data);
     free(handle);
     return 0;
 }

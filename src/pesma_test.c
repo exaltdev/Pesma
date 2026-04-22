@@ -9,6 +9,7 @@
 int counter = 0;
 
 int tests_read_write(PHandle* handle);
+int tests_file();
 
 int main(void)
 {
@@ -19,8 +20,29 @@ int main(void)
     PHandle* handle = pesma_buffer_create(1024);
     int i = tests_read_write(handle);
     printf("%d\n", i);
+    pesma_handle_free(handle);
+    handle = NULL;
+
+    printf("\n");
+    i = tests_file();
     return 0;
 }
+
+
+void test_read(){
+
+    printf("[TESTS] File test. Read chars from readme.txt, output: characters:");
+    PHandle* handle = pesma_file_open("readme.txt", "r");
+    pesma_file_read(handle, 10);
+
+    for(int i = 0;i<10;i++){
+        printf("%c",pesma_read_char(handle));
+    }
+    printf("\n");
+
+    return;
+}
+
 
 void test_mixed(PHandle* handle)
 {
@@ -149,5 +171,10 @@ int tests_read_write(PHandle* handle)
     test_uint16(handle);
     test_string(handle);
     test_mixed(handle);
+    return 0;
+}
+
+int tests_file(){
+    test_read();
     return 0;
 }

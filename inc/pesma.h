@@ -25,6 +25,8 @@ typedef enum {
 
 #include "pesma_internal.h"
 
+#define PATH_MAX 4096
+
 #define SOCKET_BUFFER_SIZE 65536
 #define FILE_BUFFER_SIZE 65536
 

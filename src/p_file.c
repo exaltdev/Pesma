@@ -1,11 +1,10 @@
 #include "pesma.h"
+#include <unistd.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 /* File operations */
-
-
 
 int pesma_internal_parse_mode(const char* mode)
 {
@@ -39,8 +38,10 @@ PHandle* pesma_file_open(const char* path, const char* mode)
     PHandle* handle = malloc(sizeof(PHandle));
     handle->type = P_TYPE_FILE;
     pesma_internal_buffers_create(handle,FILE_BUFFER_SIZE);
-    handle->backend.file.descriptor = fd;
-    handle->backend.file.path = path;
+    handle->backend.file.fd = fd;
+    //TODO: strcmp the path maybe, maybe something safer we will see..
+    handle->backend.file.path = malloc(PATH_MAX);
+    strcpy(handle->backend.file.path, path);
     return handle;
 }
 
@@ -67,7 +68,7 @@ long pesma_file_tell(PHandle* handle)
 
 ssize_t pesma_file_read(PHandle* handle, size_t len)
 {
-    return 0;
+    return read(handle->backend.file.fd, handle->read_buffer.data, len);
 }
 
 ssize_t pesma_file_write(PHandle* handle, size_t len)
