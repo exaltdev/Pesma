@@ -43,6 +43,14 @@ void test_read(){
     return;
 }
 
+void test_write(){
+    printf("[TESTS] File test. Write data to writeme.txt, output: characters:");
+    PHandle* handle = pesma_file_open("writeme.txt", "rwc");
+    pesma_write_string(handle, "characters");
+    pesma_file_write(handle, 10);
+    return;
+}
+
 
 void test_mixed(PHandle* handle)
 {
@@ -175,6 +183,7 @@ int tests_read_write(PHandle* handle)
 }
 
 int tests_file(){
+    test_write();
     test_read();
     return 0;
 }

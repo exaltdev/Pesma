@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
 /* File operations */
 
@@ -34,7 +35,7 @@ int pesma_internal_parse_mode(const char* mode)
 
 PHandle* pesma_file_open(const char* path, const char* mode)
 {
-    int fd = open(path, pesma_internal_parse_mode(mode));
+    int fd = open(path, pesma_internal_parse_mode(mode), S_IRWXU);
     PHandle* handle = malloc(sizeof(PHandle));
     handle->type = P_TYPE_FILE;
     pesma_internal_buffers_create(handle,FILE_BUFFER_SIZE);
@@ -73,5 +74,5 @@ ssize_t pesma_file_read(PHandle* handle, size_t len)
 
 ssize_t pesma_file_write(PHandle* handle, size_t len)
 {
-    return 0;
+    return write(handle->backend.file.fd, handle->write_buffer.data, len);
 }
