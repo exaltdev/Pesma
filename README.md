@@ -83,6 +83,6 @@ return 0;
 
 The library handles endianness internally. You write and read values in native byte order and the library converts to a consistent network byte order in the buffer. Data written on a little-endian machine can be read correctly on a big-endian machine.
 
-## Licence
+## License
 
-Check the LICENCE file for the licence.
+Check the LICENSE file for the license.
