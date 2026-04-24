@@ -59,7 +59,7 @@ size_t pesma_file_size(PHandle* handle)
 
 int pesma_file_seek(PHandle* handle, long offset, int whence)
 {
-    return 0;
+    return lseek(handle->backend.file.fd, 0, SEEK_END);
 }
 
 long pesma_file_tell(PHandle* handle)
