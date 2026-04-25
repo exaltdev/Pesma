@@ -1,89 +1,133 @@
 #include "pesma.h"
-#include <unistd.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 /* File operations */
 
 int pesma_internal_parse_mode(const char* mode)
 {
     int flags = 0;
-    int index = 0;
-    int rdwr = 0;
-    
-    //TODO: Tidy and harden logic on not having double chatacters. This works for now
+    int has_read = 0, has_write = 0;
+
     for(int i = 0; mode[i] != 0; i++) {
         switch(mode[i]) {
-        case 'r': rdwr += 1; break;
-        case 'w': rdwr += 2; break;
+        case 'r': has_read = 1; break;
+        case 'w': has_write = 1; break;
         case 'a': flags |= O_APPEND; break;
         case 'c': flags |= O_CREAT; break;
-        default : printf("[PESMA] Invalid file open mode [%c]", mode[i]); return -1;
+        default : fprintf(stderr, "[PESMA] Invalid mode char: %c\n", mode[i]); return -1;
         }
     }
-    // ORing with O_RDONLY doesnt nothing as O_RDONLY is 0.
-    if(!rdwr)
-        printf("[PESMA] No read/write choise, deafulting to read only.");
-    if(rdwr == 2)
-        flags |= O_WRONLY;
-    if(rdwr == 3)
+
+    if(has_read && has_write)
         flags |= O_RDWR;
+    else if(has_write)
+        flags |= O_WRONLY;
+    else
+        flags |= O_RDONLY;
     return flags;
 }
 
 PHandle* pesma_file_open(const char* path, const char* mode)
 {
-    int fd = open(path, pesma_internal_parse_mode(mode), S_IRWXU);
+    int flags = pesma_internal_parse_mode(mode);
+    if(flags == -1)
+        return NULL;
+
+    int fd;
+
+    if(flags & O_CREAT) {
+        fd = open(path, flags, S_IRUSR | S_IWUSR);  // Or 0600
+    }
+    else {
+        fd = open(path, flags);
+    }
+    if (fd == -1) return NULL;
+
     PHandle* handle = malloc(sizeof(PHandle));
     handle->type = P_TYPE_FILE;
-    pesma_internal_buffers_create(handle,FILE_BUFFER_SIZE);
+    pesma_internal_buffers_create(handle, FILE_BUFFER_SIZE);
     handle->backend.file.fd = fd;
     //TODO: strcmp the path maybe, maybe something safer we will see..
     handle->backend.file.path = malloc(PATH_MAX);
+    if(!handle->backend.file.path) {
+        close(fd);
+        free(handle);
+        return NULL;
+    }
     strcpy(handle->backend.file.path, path);
     return handle;
 }
 
 PHandle* pesma_fifo_create(const char* path, const char* mode)
 {
-    int fd = mkfifo(path, pesma_internal_parse_mode(mode));//Blocks until other process opens r/w
+    if(mkfifo(path, S_IRUSR | S_IWUSR) == -1) {
+        if(errno != EEXIST)
+            return NULL;
+    }
+
+    int flags = pesma_internal_parse_mode(mode);
+    if(flags == -1)
+        return NULL;
+
+    int fd = open(path, flags);
+    if(fd == -1)
+        return NULL;
+
     PHandle* handle = malloc(sizeof(PHandle));
-    handle->type = P_TYPE_FILE;
-    pesma_internal_buffers_create(handle,FILE_BUFFER_SIZE);
+    handle->type = P_TYPE_FIFO;
+    pesma_internal_buffers_create(handle, FILE_BUFFER_SIZE);
     handle->backend.file.fd = fd;
     //TODO: strcmp the path maybe, maybe something safer we will see..
     handle->backend.file.path = malloc(PATH_MAX);
+    if(!handle->backend.file.path) {
+        close(fd);
+        free(handle);
+        return NULL;
+    }
     strcpy(handle->backend.file.path, path);
     return handle;
 }
 
-size_t pesma_file_size(PHandle* handle)
+off_t pesma_file_size(PHandle* handle)
 {
-    return lseek(handle->backend.file.fd, 0, SEEK_END);
+    off_t current = lseek(handle->backend.file.fd, 0, SEEK_CUR);
+    if (current == -1) return -1;
+
+    off_t size = lseek(handle->backend.file.fd, 0, SEEK_END);
+    if (size == -1) {
+        lseek(handle->backend.file.fd, current, SEEK_SET);
+        return -1;
+    }
+
+    lseek(handle->backend.file.fd, current, SEEK_SET);
+    return size;
 }
 
-int pesma_file_seek(PHandle* handle, long offset, int whence)
+off_t pesma_file_seek(PHandle* handle, long offset, int whence)
 {
-    return 0;
+    return lseek(handle->backend.file.fd, offset, whence);
 }
 
-long pesma_file_tell(PHandle* handle)
+off_t pesma_file_tell(PHandle* handle)
 {
-    return 0;
+    return lseek(handle->backend.file.fd, 0, SEEK_CUR);
 }
 
 ssize_t pesma_file_read(PHandle* handle, size_t len)
 {
-    ssize_t ret = read(handle->backend.file.fd, handle->read_buffer.data, len); 
-    pesma_buffer_clear(handle,'r');
+    ssize_t ret = read(handle->backend.file.fd, handle->read_buffer.data, len);
+    pesma_buffer_clear(handle, 'r');
     return ret;
 }
 
 ssize_t pesma_file_write(PHandle* handle, size_t len)
 {
-    ssize_t ret = write(handle->backend.file.fd, handle->write_buffer.data, len); 
-    pesma_buffer_clear(handle,'w');
+    ssize_t ret = write(handle->backend.file.fd, handle->write_buffer.data, len);
+    pesma_buffer_clear(handle, 'w');
     return ret;
 }

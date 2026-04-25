@@ -51,8 +51,7 @@ typedef struct PHandle PHandle;
 
 /* Internal helper functions */
 int internal_flush (PHandle* handle);
-ssize_t
-pesma_write_buffer_load (PHandle* handle, const void* data, size_t len); // append to write buffer
+int pesma_internal_parse_mode(const char* mode);
 int      pesma_internal_socket_create (bool type, uint16_t port);
 void     pesma_internal_buffers_create (PHandle* handle, size_t size);
 ssize_t  pesma_internal_write (PHandle* handle, size_t size, void* value, const char* message);

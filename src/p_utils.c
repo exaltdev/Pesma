@@ -76,7 +76,7 @@ ssize_t pesma_internal_write(PHandle* handle, size_t size, void* value, const ch
 
     counter = size;
     data = handle->write_buffer.data;
-    if(handle->write_buffer.pos + size >= handle->write_buffer.size) {
+    if(handle->write_buffer.pos + size == handle->write_buffer.size) {
         fprintf(stderr, "[PESMA] The write buffer size is to small to write %s", message);
         return 1;
     }
@@ -176,7 +176,7 @@ uint64_t pesma_internal_read(PHandle* handle, size_t size, const char* message)
     counter = size;
     value = 0;
     data = handle->read_buffer.data;
-    if(handle->read_buffer.pos + size >= handle->read_buffer.size) {
+    if(handle->read_buffer.pos + size == handle->read_buffer.size) {
         fprintf(stderr,
             "[PESMA] Attempting to read %s while there is not enough space in buffer",
             message);

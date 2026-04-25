@@ -28,7 +28,7 @@ typedef enum {
 #define PATH_MAX 4096
 
 #define SOCKET_BUFFER_SIZE 65536
-#define FILE_BUFFER_SIZE 65536
+#define FILE_BUFFER_SIZE   65536
 
 /* TCP
 Create TCP client/server and perform I/O */
@@ -50,17 +50,16 @@ ssize_t  pesma_udp_receive (PHandle* handle, size_t len);           // receive U
 /* File
 Open, read/write, seek, size operations */
 PHandle* pesma_file_open (const char* path, const char* mode);       // open or create file
-size_t   pesma_file_size (PHandle* handle);                          // get file size
-int      pesma_file_seek (PHandle* handle, long offset, int whence); // seek in file
-long     pesma_file_tell (PHandle* handle);                          // get current file position
+PHandle* pesma_fifo_create(const char* path, const char* mode);      // open or create pipe
+off_t    pesma_file_size (PHandle* handle);                          // get file size
+off_t    pesma_file_seek (PHandle* handle, long offset, int whence); // seek in file
+off_t    pesma_file_tell (PHandle* handle);                          // get current file position
 ssize_t  pesma_file_read (PHandle* handle, size_t len);              // read from file
 ssize_t  pesma_file_write (PHandle* handle, size_t len);             // write to file
 
 /* Memory buffer
 Initializers and read/write into buffers*/
 PHandle* pesma_buffer_create (size_t capacity);          // create memory buffer
-ssize_t  pesma_buffer_get (PHandle* handle, size_t len); // read from buffer
-ssize_t  pesma_buffer_set (PHandle* handle, size_t len); // write to buffer
 
 /* Utilities
 Query type/state, network wait, buffer operations */
