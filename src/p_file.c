@@ -54,12 +54,12 @@ PHandle* pesma_fifo_create(const char* path, const char* mode)
 
 size_t pesma_file_size(PHandle* handle)
 {
-    return 0;
+    return lseek(handle->backend.file.fd, 0, SEEK_END);
 }
 
 int pesma_file_seek(PHandle* handle, long offset, int whence)
 {
-    return lseek(handle->backend.file.fd, 0, SEEK_END);
+    return 0;
 }
 
 long pesma_file_tell(PHandle* handle)
