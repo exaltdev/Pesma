@@ -48,8 +48,15 @@ PHandle* pesma_file_open(const char* path, const char* mode)
 
 PHandle* pesma_fifo_create(const char* path, const char* mode)
 {
-    //TODO: mkfifo handle
-    return 0;
+    int fd = mkfifo(path, pesma_internal_parse_mode(mode));//Blocks until other process opens r/w
+    PHandle* handle = malloc(sizeof(PHandle));
+    handle->type = P_TYPE_FILE;
+    pesma_internal_buffers_create(handle,FILE_BUFFER_SIZE);
+    handle->backend.file.fd = fd;
+    //TODO: strcmp the path maybe, maybe something safer we will see..
+    handle->backend.file.path = malloc(PATH_MAX);
+    strcpy(handle->backend.file.path, path);
+    return handle;
 }
 
 size_t pesma_file_size(PHandle* handle)
