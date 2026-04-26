@@ -246,6 +246,7 @@ char pesma_read_char(PHandle* handle)
 
 ssize_t pesma_read_string(PHandle* handle, char* dst, size_t max_len)
 {
+    //TODO: respect max_len
     uint8_t* data;
     int pos;
     data = handle->read_buffer.data;

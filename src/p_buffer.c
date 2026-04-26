@@ -20,8 +20,9 @@ void pesma_buffer_sync(PHandle* handle){
     else
         memmove(handle->write_buffer.data, handle->write_buffer.data + pos, used - pos);
     
+    handle->read_buffer.used = used - pos;
+    handle->write_buffer.used = used - pos;
     handle->read_buffer.pos = 0;
-    handle->read_buffer.used = handle->write_buffer.used;
     
     return;
 }
