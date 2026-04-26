@@ -88,6 +88,8 @@ void test_mixed(PHandle* handle)
 
     printf(" [TESTS] Mixed test. outputs in order:");
 
+    pesma_buffer_sync(handle);
+
     char buf[1024];
     pesma_read_string(handle, buf, strlen(str));
     printf("%s", buf);
@@ -121,6 +123,7 @@ void test_string(PHandle* handle)
 
     printf("[TESTS] string testing, tring output order: ");
 
+    pesma_buffer_sync(handle);
     char buf[1028];
 
     pesma_read_string(handle, buf, strlen(s1));
@@ -149,6 +152,8 @@ void test_uint16(PHandle* handle)
 
     printf("[TESTS] Uint16 testing, uint16 output order: ");
 
+    pesma_buffer_sync(handle);
+
     printf("%d,", pesma_read_uint16(handle));
     printf("%d,", pesma_read_uint16(handle));
     printf("%d\n", pesma_read_uint16(handle));
@@ -168,6 +173,8 @@ void test_char(PHandle* handle)
     pesma_write_char(handle, 'a');
 
     printf("[TESTS] Char testing, chars output order: ");
+
+    pesma_buffer_sync(handle);
 
     printf("%c,", pesma_read_char(handle));
     printf("%c,", pesma_read_char(handle));

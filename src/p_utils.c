@@ -36,12 +36,13 @@ int pesma_buffer_clear(PHandle* handle, char type)
     else if(type == 'r')
         buf = &(handle->read_buffer);
     else {
-        fprintf(stderr, "[PESMA] Attempting to clear nonexistant buffer type");
+        fprintf(stderr, "[PESMA] Attempting to clear nonexistant buffer type\n");
         return -1;
     }
 
     memset(buf->data, 0, buf->size);
     buf->used = 0;
+    buf->pos = 0;
     return 0;
 }
 
@@ -52,6 +53,7 @@ void pesma_internal_buffers_create(PHandle* handle, size_t size)
     buf->data = data;
     buf->size = size;
     buf->used = 0;
+    buf->pos = 0;
 
     buf = &(handle->read_buffer);
     if(handle->type != P_TYPE_BUFFER)
@@ -59,6 +61,7 @@ void pesma_internal_buffers_create(PHandle* handle, size_t size)
     buf->data = data;
     buf->size = size;
     buf->used = 0;
+    buf->pos = 0;
     return;
 }
 
@@ -73,8 +76,8 @@ ssize_t pesma_internal_write(PHandle* handle, size_t size, void* value, const ch
 
     counter = size;
     data = handle->write_buffer.data;
-    if(handle->write_buffer.used + size == handle->write_buffer.size) {
-        fprintf(stderr, "[PESMA] The write buffer size is to small to write %s", message);
+    if(handle->write_buffer.used + size > handle->write_buffer.size) {
+        fprintf(stderr, "[PESMA] The write buffer size is to small to write %s\n", message);
         return 1;
     }
     casted_value = *(uint64_t*) value;
@@ -152,7 +155,7 @@ ssize_t pesma_write_string(PHandle* handle, const char* str)
 
     if(handle->write_buffer.used + length > handle->write_buffer.size) {
         fprintf(stderr,
-            "[PESMA] The write buffer size is to small to pack the string of length %ld",
+            "[PESMA] The write buffer size is to small to pack the string of length %ld \n",
             length);
         return 1;
     }
@@ -173,14 +176,14 @@ uint64_t pesma_internal_read(PHandle* handle, size_t size, const char* message)
     counter = size;
     value = 0;
     data = handle->read_buffer.data;
-    if(handle->read_buffer.used + size == handle->read_buffer.size) {
+    if(handle->read_buffer.pos + size > handle->read_buffer.used) {
         fprintf(stderr,
-            "[PESMA] Attempting to read %s while there is not enough space in buffer",
+            "[PESMA] Attempting to read %s while there is not enough space in buffer\n",
             message);
         return 1;
     }
     while(--counter >= 0) {
-        uint8_t byte = data[handle->read_buffer.used++];
+        uint8_t byte = data[handle->read_buffer.pos++];
         value |= byte << counter * 8;
     }
     return value;
@@ -244,13 +247,13 @@ char pesma_read_char(PHandle* handle)
 ssize_t pesma_read_string(PHandle* handle, char* dst, size_t max_len)
 {
     uint8_t* data;
-    int used;
+    int pos;
     data = handle->read_buffer.data;
 
-    for(used = 0; data[handle->read_buffer.used] != 0; used++) {
-        dst[used] = data[handle->read_buffer.used++];
+    for(pos = 0; data[handle->read_buffer.pos] != 0; pos++) {
+        dst[pos] = data[handle->read_buffer.pos++];
     }
-    dst[used] = '\0';
-    handle->read_buffer.used++;
+    dst[pos] = '\0';
+    handle->read_buffer.pos++;
     return 0;
 }

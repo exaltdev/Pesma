@@ -122,8 +122,24 @@ off_t pesma_file_tell(PHandle* handle)
 
 ssize_t pesma_file_read(PHandle* handle, size_t len)
 {
-    ssize_t ret = read(handle->backend.file.fd, handle->read_buffer.data, len);
-    pesma_buffer_clear(handle, 'r');
+    int move = len;
+    int pos = handle->write_buffer.pos;
+    int used = handle->write_buffer.used;
+    int size = handle->write_buffer.size;
+
+    if(pos >= used)
+        pesma_buffer_clear(handle, 'r');//Not needed?
+    else
+        memmove(handle->write_buffer.data, handle->write_buffer.data + pos, used - pos);
+    
+    move = len;
+    if(len + used - pos > size)
+        move = size - used + pos;
+
+    ssize_t ret = read(handle->backend.file.fd, handle->write_buffer.data, move);
+    
+    handle->read_buffer.pos = 0;
+    handle->read_buffer.used = used - pos + move;
     return ret;
 }
 

@@ -60,6 +60,7 @@ ssize_t  pesma_file_write (PHandle* handle, size_t len);             // write to
 /* Memory buffer
 Initializers and read/write into buffers*/
 PHandle* pesma_buffer_create (size_t capacity);          // create memory buffer
+void pesma_buffer_sync(PHandle* handle);                 // syncs buffer usage
 
 /* Utilities
 Query type/state, network wait, buffer operations */
