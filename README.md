@@ -48,6 +48,7 @@ pesma_write_float(handle, 3.14f);
 pesma_write_string(handle, "Hello, World!");
 
 // Phase 2: Send the buffer
+pesma_buffer_sync(handle) // syncs usage of the buffer
 pesma_buffer_send(handle, handle->write_buffer.used);
 
 pesma_handle_free(handle);
