@@ -131,13 +131,16 @@ ssize_t pesma_file_write(PHandle* handle, size_t len)
 {
     int move = len;
     int used = handle->write_buffer.used;
-    if (len > used) move = used;
-    
+    if(len > used)
+        move = used;
+
     ssize_t ret = write(handle->backend.file.fd, handle->write_buffer.data, move);
 
-    if(move == used) pesma_buffer_clear(handle, 'w');
-    else memmove(handle->write_buffer.data, &(handle->write_buffer.data[len-1]),used-len);
-    
+    if(move == used)
+        pesma_buffer_clear(handle, 'w');
+    else
+        memmove(handle->write_buffer.data, handle->write_buffer.data + move, used - move);
+
     handle->write_buffer.used = 0;
     return ret;
 }

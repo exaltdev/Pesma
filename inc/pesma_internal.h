@@ -18,7 +18,6 @@ typedef struct {
     uint8_t* data;
     size_t   size;
     size_t   used;
-    size_t   pos;
 } PBuffer;
 
 /* Socket backend */
