@@ -41,12 +41,13 @@ PHandle* pesma_file_open(const char* path, const char* mode)
     int fd;
 
     if(flags & O_CREAT) {
-        fd = open(path, flags, S_IRUSR | S_IWUSR);  // Or 0600
+        fd = open(path, flags, S_IRUSR | S_IWUSR);
     }
     else {
         fd = open(path, flags);
     }
-    if (fd == -1) return NULL;
+    if(fd == -1)
+        return NULL;
 
     PHandle* handle = malloc(sizeof(PHandle));
     handle->type = P_TYPE_FILE;
@@ -96,10 +97,11 @@ PHandle* pesma_fifo_create(const char* path, const char* mode)
 off_t pesma_file_size(PHandle* handle)
 {
     off_t current = lseek(handle->backend.file.fd, 0, SEEK_CUR);
-    if (current == -1) return -1;
+    if(current == -1)
+        return -1;
 
     off_t size = lseek(handle->backend.file.fd, 0, SEEK_END);
-    if (size == -1) {
+    if(size == -1) {
         lseek(handle->backend.file.fd, current, SEEK_SET);
         return -1;
     }
@@ -127,7 +129,15 @@ ssize_t pesma_file_read(PHandle* handle, size_t len)
 
 ssize_t pesma_file_write(PHandle* handle, size_t len)
 {
-    ssize_t ret = write(handle->backend.file.fd, handle->write_buffer.data, len);
-    pesma_buffer_clear(handle, 'w');
+    int move = len;
+    int used = handle->write_buffer.used;
+    if (len > used) move = used;
+    
+    ssize_t ret = write(handle->backend.file.fd, handle->write_buffer.data, move);
+
+    if(move == used) pesma_buffer_clear(handle, 'w');
+    else memmove(handle->write_buffer.data, &(handle->write_buffer.data[len-1]),used-len);
+    
+    handle->write_buffer.used = 0;
     return ret;
 }
