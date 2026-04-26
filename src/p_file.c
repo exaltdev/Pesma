@@ -141,6 +141,6 @@ ssize_t pesma_file_write(PHandle* handle, size_t len)
     else
         memmove(handle->write_buffer.data, handle->write_buffer.data + move, used - move);
 
-    handle->write_buffer.used = 0;
+    handle->write_buffer.used = used - move;
     return ret;
 }
