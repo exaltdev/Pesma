@@ -14,8 +14,9 @@ A C library providing endian-independent I/O abstractions for sockets, files, an
 
 - [x] Typed read/write operations
 - [x] Memory buffer handles
-- [x] File I/O handles (WIP)
-- [ ] TCP/UDP networking (TODO)
+- [x] File I/O handles
+- [x] Unified send/recv interface
+- [ ] TCP/UDP networking (WIP)
 - [ ] epoll integration (TODO)
 - [ ] OpenSSL/TLS support (TODO)
 
@@ -48,8 +49,8 @@ pesma_write_float(handle, 3.14f);
 pesma_write_string(handle, "Hello, World!");
 
 // Phase 2: Send the buffer
-pesma_buffer_sync(handle) // syncs usage of the buffer
-pesma_buffer_send(handle, handle->write_buffer.used);
+pesma_buffer_sync(handle); // syncs usage of the buffer
+pesma_send(handle, handle->write_buffer.used);
 
 pesma_handle_free(handle);
 return 0;
@@ -63,10 +64,10 @@ Reading reads into the internal read buffer, from which you extract your needed 
 #include <stdio.h>
 
 int main() {
-PHandle* handle = pesma_file_open("data.bin", "rb");
+PHandle* handle = pesma_file_open("data.bin", "r");
 
 // Phase 1: Fill read buffer from source
-pesma_file_read(handle, 1024);
+pesma_recv(handle, 1024);
 
 // Phase 2: Extract typed values
 int32_t count = pesma_read_int32(handle);
@@ -82,7 +83,7 @@ return 0;
 }
 ```
 
-The library handles endianness internally. You write and read values in native byte order and the library converts to a consistent network byte order in the buffer. Data written on a little-endian machine can be read correctly on a big-endian machine.
+The library handles endianness internally. You write and read values in native byte order and the library converts to a consistent big-endian byte order in the buffer. Data written on a little-endian machine can be read correctly on a big-endian machine.
 
 ## License
 
