@@ -37,15 +37,11 @@ int      pesma_tcp_connect (PHandle* handle);                              // co
 PHandle* pesma_tcp_server_create (uint16_t port);                          // create TCP server
 PHandle* pesma_tcp_accept (PHandle* handle);              // accept client connection
 bool     pesma_handle_connected (PHandle* handle);        // check connection
-ssize_t  pesma_tcp_send (PHandle* handle, size_t len);    // send TCP data
-ssize_t  pesma_tcp_receive (PHandle* handle, size_t len); // receive TCP data
 
 /* UDP
 Create UDP handle and perform I/O */
 PHandle* pesma_udp_create (const char* dns_address, uint16_t port); // create UDP handle
 int      pesma_udp_connect (PHandle* handle);                       // optional UDP connect
-ssize_t  pesma_udp_send (PHandle* handle, size_t len);              // send UDP data
-ssize_t  pesma_udp_receive (PHandle* handle, size_t len);           // receive UDP data
 
 /* File
 Open, read/write, seek, size operations */
@@ -54,8 +50,6 @@ PHandle* pesma_fifo_create(const char* path, const char* mode);      // open or 
 off_t    pesma_file_size (PHandle* handle);                          // get file size
 off_t    pesma_file_seek (PHandle* handle, long offset, int whence); // seek in file
 off_t    pesma_file_tell (PHandle* handle);                          // get current file position
-ssize_t  pesma_file_read (PHandle* handle, size_t len);              // read from file
-ssize_t  pesma_file_write (PHandle* handle, size_t len);             // write to file
 
 /* Memory buffer
 Initializers and read/write into buffers*/
@@ -71,6 +65,11 @@ int   pesma_network_wait (PHandle* handle,
                           int      timeout_ms);             // wait until readable/writable
 int   pesma_handle_free (PHandle* handle);             // close socket/file/buffer and free
 int   pesma_buffer_clear (PHandle* handle, char type); // clears selected buffer in handle
+
+/* Universal send/recv functions
+Read/write to socket/file/buffer/etc...*/
+ssize_t pesma_send(PHandle* handle, size_t len);
+ssize_t pesma_recv(PHandle* handle, size_t len);
 
 /* Typed read/write helpers
 Write basic types or strings */

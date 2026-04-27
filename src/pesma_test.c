@@ -61,12 +61,12 @@ void test_rdwr_file()
 
     int bytecount = handle->write_buffer.used;
 
-    pesma_file_write(handle, bytecount);
+    pesma_send(handle, bytecount);
     pesma_file_seek(handle, 0, SEEK_SET);
 
     printf(" [TESTS] Mixed test. outputs in order:");
 
-    pesma_file_read(handle, bytecount);
+    pesma_recv(handle, bytecount);
     
     char buf[1024];
     pesma_read_string(handle, buf, strlen(str));
@@ -97,7 +97,7 @@ void test_read(){
 
     printf("[TESTS] File test. Read chars from readme.txt, output: characters:");
     PHandle* handle = pesma_file_open("readme.txt", "r");
-    pesma_file_read(handle, 10);
+    pesma_recv(handle, 10);
 
     for(int i = 0;i<10;i++){
         printf("%c",pesma_read_char(handle));
@@ -116,7 +116,7 @@ void test_write(){
     pesma_write_char(handle,'\n');
     pesma_write_uint64(handle, 99999999);
     pesma_write_int64(handle, -99999999);
-    pesma_file_write(handle,17);
+    pesma_send(handle,17);
 
     return;
 }

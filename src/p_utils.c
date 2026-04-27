@@ -1,6 +1,7 @@
 #include "pesma.h"
 #include <stdbool.h>
 #include <stdlib.h>
+#include <sys/socket.h>
 #include <unistd.h>
 
 /* Utilities */
@@ -18,12 +19,13 @@ int pesma_network_wait(PHandle* handle, bool wait_for_read, bool wait_for_write,
 int pesma_handle_free(PHandle* handle)
 {
     //TODO: Cleaner logic here.
-    if(handle->type == P_TYPE_FILE){
+    if(handle->type == P_TYPE_FILE) {
         free(handle->backend.file.path);
         close(handle->backend.file.fd);
     }
     free(handle->write_buffer.data);
-    if(!(handle->type == P_TYPE_BUFFER))free(handle->read_buffer.data);
+    if(!(handle->type == P_TYPE_BUFFER))
+        free(handle->read_buffer.data);
     free(handle);
     return 0;
 }
@@ -63,6 +65,68 @@ void pesma_internal_buffers_create(PHandle* handle, size_t size)
     buf->used = 0;
     buf->pos = 0;
     return;
+}
+
+/* Universal send/recv functions */
+
+ssize_t pesma_recv(PHandle* handle, size_t len)
+{
+    int move = len;
+    int pos = handle->read_buffer.pos;
+    int used = handle->read_buffer.used;
+    int size = handle->read_buffer.size;
+
+    if(pos >= used)
+        pesma_buffer_clear(handle, 'r');  //Not needed?
+    else
+        memmove(handle->read_buffer.data, handle->read_buffer.data + pos, used - pos);
+
+    move = len;
+    if(len + used - pos > size)
+        move = size - used + pos;
+
+    ssize_t ret;
+    switch(handle->type) {
+    case P_TYPE_FILE:
+    case P_TYPE_FIFO: ret = read(handle->backend.file.fd, handle->read_buffer.data, move); break;
+    case P_TYPE_SOCKET:
+        ret = recv(handle->backend.socket.fd, handle->read_buffer.data, move, 0);
+        break;
+    case P_TYPE_BUFFER: pesma_buffer_sync(handle);
+                        return 0;
+    default           : return -1;
+    }
+
+    handle->read_buffer.pos = 0;
+    handle->read_buffer.used = used - pos + move;
+    return ret;
+}
+
+ssize_t pesma_send(PHandle* handle, size_t len)
+{
+    int move = len;
+    int used = handle->write_buffer.used;
+    if(len > used)
+        move = used;
+
+    ssize_t ret;
+    switch(handle->type) {
+    case P_TYPE_FILE:
+    case P_TYPE_FIFO: ret = write(handle->backend.file.fd, handle->write_buffer.data, move); break;
+    case P_TYPE_SOCKET:
+        ret = send(handle->backend.socket.fd, handle->write_buffer.data, move, 0);
+        break;
+    case P_TYPE_BUFFER: return 0;
+    default           : return -1;
+    }
+
+    if(move == used)
+        pesma_buffer_clear(handle, 'w');
+    else
+        memmove(handle->write_buffer.data, handle->write_buffer.data + move, used - move);
+
+    handle->write_buffer.used = used - move;
+    return ret;
 }
 
 /* Typed write helpers */
