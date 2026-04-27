@@ -14,7 +14,7 @@ A C library providing endian-independent I/O abstractions for sockets, files, an
 
 - [x] Typed read/write operations
 - [x] Memory buffer handles
-- [ ] File I/O handles (WIP)
+- [x] File I/O handles (WIP)
 - [ ] TCP/UDP networking (TODO)
 - [ ] epoll integration (TODO)
 - [ ] OpenSSL/TLS support (TODO)

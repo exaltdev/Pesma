@@ -28,6 +28,70 @@ int main(void)
     return 0;
 }
 
+void test_rdwr_file()
+{
+    printf("[TESTS] Read/Write mixed test \n\n");
+    PHandle* handle = pesma_file_open("rwtest.txt", "rwc");
+
+    char* str = "Good Luck!";
+    char p = '*';
+    int8_t i8 = -30;
+    uint32_t u32 = 99999;
+    uint16_t u16 = 12500;
+    int64_t i64 = -1;
+    char* str2 = "END";
+
+    printf("[TESTS] Mixed test. in order: string %s, char %c, int8 %d, uint32 %u, uint16 %u, int64 "
+           "%ld, string %s\n",
+        str,
+        p,
+        i8,
+        u32,
+        u16,
+        i64,
+        str2);
+
+    pesma_write_string(handle, str);
+    pesma_write_char(handle, p);
+    pesma_write_int8(handle, i8);
+    pesma_write_uint32(handle, u32);
+    pesma_write_uint16(handle, u16);
+    pesma_write_int64(handle, i64);
+    pesma_write_string(handle, str2);
+
+    int bytecount = handle->write_buffer.used;
+
+    pesma_file_write(handle, bytecount);
+    pesma_file_seek(handle, 0, SEEK_SET);
+
+    printf(" [TESTS] Mixed test. outputs in order:");
+
+    pesma_file_read(handle, bytecount);
+    
+    char buf[1024];
+    pesma_read_string(handle, buf, strlen(str));
+    printf("%s", buf);
+
+    printf("%c,", pesma_read_char(handle));
+    printf("%d,", pesma_read_int8(handle));
+    printf("%u,", pesma_read_uint32(handle));
+    printf("%u,", pesma_read_uint16(handle));
+    printf("%ld,", pesma_read_int64(handle));
+
+    pesma_read_string(handle, buf, strlen(str2));
+    printf("%s", buf);
+
+    pesma_buffer_clear(handle, 'w');
+    pesma_buffer_clear(handle, 'r');
+
+    pesma_handle_free(handle);
+
+    printf("[TESTS] Read/Write mixed test done \n\n");
+    
+    return;
+}
+
+
 
 void test_read(){
 
@@ -198,5 +262,6 @@ int tests_read_write(PHandle* handle)
 int tests_file(){
     test_write();
     test_read();
+    test_rdwr_file();
     return 0;
 }
