@@ -90,6 +90,8 @@ PHandle* pesma_tcp_accept(PHandle* handle)
     uint32_t addr_size;
     struct sockaddr_in client_addr;
 
+    addr_size = sizeof(client_addr);
+
     if((sockCli = accept(handle->backend.socket.fd, (struct sockaddr*) &client_addr, &addr_size)) !=
         0) {
         exit(1);  //checkerr
