@@ -9,32 +9,31 @@
 #include <sys/types.h>
 
 /* TCP */
-int pesma_internal_socket_create(bool type, uint16_t port)
+int pesma_internal_socket_create(PSocketType type, uint16_t port)
 {
-    uint32_t sock;
+    int sock;
 
     struct sockaddr_in addr;
 
-    void* temp = memset(&addr, 0, sizeof(struct sockaddr));
+    memset(&addr, 0, sizeof(struct sockaddr));
 
-    if(type) {
+    if(type == P_TCP_SERVER || type == P_TCP_CLIENT) {
         sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     }
     else {
         sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     }
-    int err;
     if(fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
         exit(1);  //checkerr
     }
-    if(!type || port != 0) {
+    if(type != P_TCP_CLIENT) {
         addr.sin_family = AF_INET;
         addr.sin_port = htons(port);
         addr.sin_addr.s_addr = htonl(INADDR_ANY);
         if(bind(sock, (struct sockaddr*) &addr, sizeof(struct sockaddr)) != 0) {
             exit(1);  //checkerr
         }
-        if(type) {
+        if(type == P_TCP_SERVER) {
             if(listen(sock, SOMAXCONN) < 0)
                 exit(1);  //checkerr
         }
@@ -104,16 +103,6 @@ PHandle* pesma_tcp_accept(PHandle* handle)
 bool pesma_handle_connected(PHandle* handle)
 {
     return false;
-}
-
-ssize_t pesma_tcp_send(PHandle* handle, size_t len)
-{
-    return 0;
-}
-
-ssize_t pesma_tcp_receive(PHandle* handle, size_t len)
-{
-    return 0;
 }
 
 /* UDP */
