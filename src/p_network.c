@@ -74,7 +74,7 @@ PHandle* pesma_tcp_server_create(uint16_t port)
     pesma_internal_buffers_create(handle, P_SOCKET_BUFFER_SIZE);
 
     handle->backend.socket.port = port;
-    handle->backend.socket.type = 0;
+    handle->backend.socket.type = P_TCP_SERVER;
     handle->backend.socket.fd = sockServ;
     handle->backend.socket.ip_address = 0;
     handle->backend.socket.is_connected = false;
@@ -95,7 +95,17 @@ PHandle* pesma_tcp_accept(PHandle* handle)
         0) {
         exit(1);  //checkerr
     }
+    
+    client_handle = malloc(sizeof(PHandle));
 
+    handle->type = P_TYPE_SOCKET;
+
+    pesma_internal_buffers_create(handle, P_SOCKET_BUFFER_SIZE);
+
+    handle->backend.socket.type = P_TCP_SERVER;
+    handle->backend.socket.fd = sockCli;
+    handle->backend.socket.ip_address = 0;
+    handle->backend.socket.is_connected = false;
 
     return client_handle;
 }
