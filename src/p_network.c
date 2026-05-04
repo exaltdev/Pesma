@@ -43,16 +43,22 @@ int pesma_internal_socket_create(PSocketType type, uint16_t port)
 
 PHandle* pesma_tcp_client_create(const char* dns_address, uint16_t port)
 {
-    uint32_t sockServ;
+    uint32_t sockCli;
     PHandle* handle;
 
     handle = malloc(sizeof(*handle));
     memset(handle, 0, sizeof(PHandle));
     handle->type = P_TYPE_SOCKET;
-    sockServ = pesma_internal_socket_create(0, port);
+    sockCli = pesma_internal_socket_create(0, port);
+
+    handle->backend.socket.port = port;
+    handle->backend.socket.type = P_TCP_CLIENT;
+    handle->backend.socket.fd = sockCli;
+    handle->backend.socket.ip_address = 0;
+    handle->backend.socket.is_connected = false;
 
     //TODO: Unfinished, setup similar logic to the server create.
-    return NULL;
+    return handle;
 }
 
 int pesma_tcp_connect(PHandle* handle)
@@ -105,7 +111,7 @@ PHandle* pesma_tcp_accept(PHandle* handle)
     handle->backend.socket.type = P_TCP_SERVER;
     handle->backend.socket.fd = sockCli;
     handle->backend.socket.ip_address = 0;
-    handle->backend.socket.is_connected = false;
+    handle->backend.socket.is_connected = true;
 
     return client_handle;
 }
