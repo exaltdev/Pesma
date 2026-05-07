@@ -41,7 +41,18 @@ bool     pesma_handle_connected (PHandle* handle);        // check connection
 /* UDP
 Create UDP handle and perform I/O */
 PHandle* pesma_udp_create (const char* dns_address, uint16_t port); // create UDP handle
-int      pesma_udp_connect (PHandle* handle);                       // optional UDP connect
+int      pesma_udp_connect (PHandle* handle); // optional UDP connect
+                                              //
+/* Socket general
+General purpose socket operations */
+int pesma_socket_shutdown(PHandle* handle, int how);  // SHUT_RD, SHUT_WR, SHUT_RDWR
+int pesma_socket_set_reuseaddr(PHandle* handle, bool enable);  // SO_REUSEADDR
+int pesma_socket_set_keepalive(PHandle* handle, bool enable);  // TCP keepalive
+int pesma_socket_set_nodelay(PHandle* handle, bool enable);    // TCP_NODELAY
+int pesma_socket_get_peer(PHandle* handle, char* ip_str, size_t ip_len, uint16_t* port);
+int pesma_socket_get_local(PHandle* handle, char* ip_str, size_t ip_len, uint16_t* port);
+int pesma_socket_get_error(PHandle* handle);  // getsockopt SO_ERROR
+bool pesma_socket_is_connected(PHandle* handle);
 
 /* File
 Open, read/write, seek, size operations */
