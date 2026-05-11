@@ -62,9 +62,7 @@ PHandle* pesma_tcp_client_create(const char* dns_address, uint16_t port)
 }
 
 int pesma_tcp_connect(PHandle* handle)
-{
-    return 0;
-}
+{ return 0; }
 
 PHandle* pesma_tcp_server_create(uint16_t port)
 {
@@ -101,7 +99,7 @@ PHandle* pesma_tcp_accept(PHandle* handle)
         0) {
         exit(1);  //checkerr
     }
-    
+
     client_handle = malloc(sizeof(PHandle));
 
     handle->type = P_TYPE_SOCKET;
@@ -117,28 +115,66 @@ PHandle* pesma_tcp_accept(PHandle* handle)
 }
 
 bool pesma_handle_connected(PHandle* handle)
-{
-    return false;
-}
+{ return false; }
 
 /* UDP */
 
 PHandle* pesma_udp_create(const char* dns_address, uint16_t port)
-{
-    return NULL;
-}
+{ return NULL; }
 
 int pesma_udp_connect(PHandle* handle)
-{
-    return 0;
-}
+{ return 0; }
 
 ssize_t pesma_udp_send(PHandle* handle, size_t len)
+{ return 0; }
+
+ssize_t pesma_udp_receive(PHandle* handle, size_t len)
+{ return 0; }
+
+/* Socket utils */
+
+int pesma_socket_shutdown(PHandle* handle, int how)
 {
     return 0;
 }
 
-ssize_t pesma_udp_receive(PHandle* handle, size_t len)
+int pesma_socket_set_reuseaddr(PHandle* handle, bool enable)
+{
+    return 0;
+}
+
+
+int pesma_socket_set_keepalive(PHandle* handle, bool enable)
+{
+    return 0;
+}
+
+
+int pesma_socket_set_nodelay(PHandle* handle, bool enable)
+{
+    return 0;
+}
+
+
+int pesma_socket_get_peer(PHandle* handle, char* ip_str, size_t ip_len, uint16_t* port)
+{
+    return 0;
+}
+
+
+int pesma_socket_get_local(PHandle* handle, char* ip_str, size_t ip_len, uint16_t* port)
+{
+    return 0;
+}
+
+
+int pesma_socket_get_error(PHandle* handle)
+{
+    return 0;
+}
+
+
+bool pesma_socket_is_connected(PHandle* handle)
 {
     return 0;
 }
