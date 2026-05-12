@@ -6,8 +6,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
 
 /* TCP */
 int pesma_internal_socket_create(PSocketType type, uint16_t port)
@@ -32,6 +33,7 @@ int pesma_internal_socket_create(PSocketType type, uint16_t port)
         addr.sin_port = htons(port);
         addr.sin_addr.s_addr = htonl(INADDR_ANY);
         if(bind(sock, (struct sockaddr*) &addr, sizeof(struct sockaddr)) != 0) {
+            perror("bind fail");
             exit(1);  //checkerr
         }
         if(type == P_TCP_SERVER) {
@@ -46,6 +48,7 @@ PHandle* pesma_tcp_client_create(const char* dns_address, uint16_t port)
 {
     int sockCli;
     PHandle* handle;
+    struct sockaddr addr;
 
     handle = malloc(sizeof(*handle));
     memset(handle, 0, sizeof(PHandle));
@@ -53,7 +56,8 @@ PHandle* pesma_tcp_client_create(const char* dns_address, uint16_t port)
     sockCli = pesma_internal_socket_create(0, port);
 
     pesma_internal_buffers_create(handle, P_SOCKET_BUFFER_SIZE);
-
+    //int ret;
+    //ret = getaddrinfo();
     handle->backend.socket.port = port;
     handle->backend.socket.type = P_TCP_CLIENT;
     handle->backend.socket.fd = sockCli;
@@ -140,7 +144,10 @@ int pesma_socket_shutdown(PHandle* handle, int how)
 int pesma_socket_set_reuseaddr(PHandle* handle, bool enable)
 {
     int optval = enable;
-    return setsockopt(handle->backend.file.fd, SOL_SOCKET, SO_REUSEADDR, &optval, 4);
+    int ret;
+    ret = setsockopt(handle->backend.file.fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+    if(ret != 0) perror("Reuseaddr error");
+    return ret;
 }
 
 int pesma_socket_set_keepalive(PHandle* handle, bool enable)
@@ -153,6 +160,10 @@ int pesma_socket_set_keepalive(PHandle* handle, bool enable)
     return setsockopt(handle->backend.file.fd, SOL_SOCKET, SO_KEEPALIVE, &optval, 4);
 }
 
+int pesma_socket_set_nonblock(PHandle* handle)
+{
+    return fcntl(handle->backend.file.fd, F_SETFL, O_NONBLOCK);
+}
 int pesma_socket_set_nodelay(PHandle* handle, bool enable)
 {
     if(handle->backend.socket.type == P_UDP){

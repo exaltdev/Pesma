@@ -311,14 +311,21 @@ int tests_file(){
 
 int tests_server(){
     PHandle* serv = pesma_tcp_server_create(8080);
+    //TODO: this does nothing since reuseaddr has to be set before binding.
+    pesma_socket_set_reuseaddr(serv, 1);
+
     PHandle* client = pesma_tcp_accept(serv);
     pesma_recv(client, client->read_buffer.size);
     
+    
+
     char* buffer = malloc(client->read_buffer.size+1);
     memset(buffer, 0, client->read_buffer.size+1);
     memmove(buffer, client->read_buffer.data, client->read_buffer.used);
     printString(buffer);
     printf("\n");
+
+    
 
     char resp[] = "HTTP/1.0 200 OK\r\n"
     "Server: webserver-c\r\n"

@@ -23,6 +23,9 @@ int pesma_handle_free(PHandle* handle)
         free(handle->backend.file.path);
         close(handle->backend.file.fd);
     }
+    if(handle->type == P_TYPE_SOCKET){
+        close(handle->backend.socket.fd);
+    }
     free(handle->write_buffer.data);
     if(!(handle->type == P_TYPE_BUFFER))
         free(handle->read_buffer.data);
