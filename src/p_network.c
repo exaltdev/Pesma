@@ -25,9 +25,11 @@ int pesma_internal_socket_create(PSocketType type, uint16_t port)
     else {
         sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     }
-    //if(fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
-    //   exit(1);  //checkerr
-    //}
+    if(type != P_TCP_SERVER){
+        if(fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
+            exit(1);  //checkerr
+        }
+    }
     if(type != P_TCP_CLIENT) {
         addr.sin_family = AF_INET;
         addr.sin_port = htons(port);
@@ -145,7 +147,7 @@ int pesma_socket_set_reuseaddr(PHandle* handle, bool enable)
 {
     int optval = enable;
     int ret;
-    ret = setsockopt(handle->backend.file.fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+    ret = setsockopt(handle->backend.socket.fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
     if(ret != 0) perror("Reuseaddr error");
     return ret;
 }
@@ -157,12 +159,12 @@ int pesma_socket_set_keepalive(PHandle* handle, bool enable)
         return -1;
     }
     int optval = enable;
-    return setsockopt(handle->backend.file.fd, SOL_SOCKET, SO_KEEPALIVE, &optval, 4);
+    return setsockopt(handle->backend.sockeI am t.fd, SOL_SOCKET, SO_KEEPALIVE, &optval, 4);
 }
 
 int pesma_socket_set_nonblock(PHandle* handle)
 {
-    return fcntl(handle->backend.file.fd, F_SETFL, O_NONBLOCK);
+    return fcntl(handle->backend.socket.fd, F_SETFL, O_NONBLOCK);
 }
 int pesma_socket_set_nodelay(PHandle* handle, bool enable)
 {
@@ -171,7 +173,7 @@ int pesma_socket_set_nodelay(PHandle* handle, bool enable)
         return -1;
     }
     int optval = enable;
-    return setsockopt(handle->backend.file.fd, IPPROTO_TCP, TCP_NODELAY, &optval, 4);
+    return setsockopt(handle->backend.socket.fd, IPPROTO_TCP, TCP_NODELAY, &optval, 4);
 }
 
 int pesma_socket_get_peer(PHandle* handle, char* ip_str, size_t ip_len, uint16_t* port)
