@@ -5,11 +5,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 int counter = 0;
 
+int tests_server();
 int tests_read_write(PHandle* handle);
 int tests_file();
+
+void printString(char* string);
+void printChar(unsigned char c);
 
 int main(void)
 {
@@ -25,12 +30,45 @@ int main(void)
 
     printf("\n");
     i = tests_file();
+    i = tests_server();
     return 0;
+}
+
+void printString(char* string){
+  int i = 0;
+  while(string[i]!='\0'){printChar(string[i]);i++;}
+}
+
+void printChar(unsigned char theChar) {
+
+    switch (theChar) {
+
+        case '\n':
+            printf("\\n\n");
+            break;
+        case '\r':
+            printf("\\r");
+            break;
+        case '\t':
+            printf("\\t");
+            break;
+        default:
+            if ((theChar < 0x20) || (theChar > 0x7f)) {
+                printf("\\%03o", (unsigned char)theChar);
+            } else {
+                printf("%c", theChar);
+            }
+        break;
+   }
 }
 
 void test_rdwr_file()
 {
     printf("[TESTS] Read/Write mixed test \n\n");
+    if(access("rwtest.txt", F_OK) == -1){
+        printf("File not exists, skipping...\n");
+        return;
+    }
     PHandle* handle = pesma_file_open("rwtest.txt", "rwc");
 
     char* str = "Good Luck!";
@@ -96,6 +134,10 @@ void test_rdwr_file()
 void test_read(){
 
     printf("[TESTS] File test. Read chars from readme.txt, output: characters:");
+    if(access("readme.txt", F_OK) == -1){
+        printf("File not exists, skipping...\n");
+        return;
+    }
     PHandle* handle = pesma_file_open("readme.txt", "r");
     pesma_recv(handle, 10);
 
@@ -109,6 +151,7 @@ void test_read(){
 
 void test_write(){
     printf("[TESTS] File test. Write data to writeme.txt, output: characters:");
+
     PHandle* handle = pesma_file_open("writeme.txt", "rwc");
     pesma_write_string(handle, "characters");
     pesma_send(handle, 5);
@@ -264,4 +307,25 @@ int tests_file(){
     test_read();
     test_rdwr_file();
     return 0;
+}
+
+int tests_server(){
+    PHandle* serv = pesma_tcp_server_create(8080);
+    PHandle* client = pesma_tcp_accept(serv);
+    pesma_recv(client, client->read_buffer.size);
+    
+    char* buffer = malloc(client->read_buffer.size+1);
+    memset(buffer, 0, client->read_buffer.size+1);
+    memmove(buffer, client->read_buffer.data, client->read_buffer.used);
+    printString(buffer);
+    printf("\n");
+
+    char resp[] = "HTTP/1.0 200 OK\r\n"
+    "Server: webserver-c\r\n"
+    "Content-type: text/html\r\n\r\n"
+    "<html>hello, world</html>\r\n";
+    
+    pesma_write_string(client, resp);
+    pesma_send(client, client->write_buffer.used);
+    return 0; 
 }

@@ -2,6 +2,7 @@
 
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,9 +24,9 @@ int pesma_internal_socket_create(PSocketType type, uint16_t port)
     else {
         sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     }
-    if(fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
-        exit(1);  //checkerr
-    }
+    //if(fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
+    //   exit(1);  //checkerr
+    //}
     if(type != P_TCP_CLIENT) {
         addr.sin_family = AF_INET;
         addr.sin_port = htons(port);
@@ -43,13 +44,15 @@ int pesma_internal_socket_create(PSocketType type, uint16_t port)
 
 PHandle* pesma_tcp_client_create(const char* dns_address, uint16_t port)
 {
-    uint32_t sockCli;
+    int sockCli;
     PHandle* handle;
 
     handle = malloc(sizeof(*handle));
     memset(handle, 0, sizeof(PHandle));
     handle->type = P_TYPE_SOCKET;
     sockCli = pesma_internal_socket_create(0, port);
+
+    pesma_internal_buffers_create(handle, P_SOCKET_BUFFER_SIZE);
 
     handle->backend.socket.port = port;
     handle->backend.socket.type = P_TCP_CLIENT;
@@ -67,13 +70,12 @@ int pesma_tcp_connect(PHandle* handle)
 PHandle* pesma_tcp_server_create(uint16_t port)
 {
     PHandle* handle;
-    uint32_t sockServ;
+    int sockServ;
 
-    sockServ = pesma_internal_socket_create(true, port);
-
+    handle = malloc(sizeof(*handle));
     memset(handle, 0, sizeof(PHandle));
-
     handle->type = P_TYPE_SOCKET;
+    sockServ = pesma_internal_socket_create(0, port);
 
     pesma_internal_buffers_create(handle, P_SOCKET_BUFFER_SIZE);
 
@@ -89,27 +91,26 @@ PHandle* pesma_tcp_server_create(uint16_t port)
 PHandle* pesma_tcp_accept(PHandle* handle)
 {
     PHandle* client_handle;
-    uint32_t sockCli;
-    uint32_t addr_size;
+    int sockCli;
+    socklen_t addr_size;
     struct sockaddr_in client_addr;
 
     addr_size = sizeof(client_addr);
-
-    if((sockCli = accept(handle->backend.socket.fd, (struct sockaddr*) &client_addr, &addr_size)) !=
-        0) {
+    sockCli = accept(handle->backend.socket.fd, (struct sockaddr*) &client_addr, &addr_size);
+    if(sockCli == -1) {
+        perror("accept fuckup");
         exit(1);  //checkerr
     }
 
-    client_handle = malloc(sizeof(PHandle));
+    client_handle = malloc(sizeof(*handle));
+    memset(client_handle, 0, sizeof(PHandle));
+    client_handle->type = P_TYPE_SOCKET;
 
-    handle->type = P_TYPE_SOCKET;
+    pesma_internal_buffers_create(client_handle, P_SOCKET_BUFFER_SIZE);
 
-    pesma_internal_buffers_create(handle, P_SOCKET_BUFFER_SIZE);
-
-    handle->backend.socket.type = P_TCP_SERVER;
-    handle->backend.socket.fd = sockCli;
-    handle->backend.socket.ip_address = 0;
-    handle->backend.socket.is_connected = true;
+    client_handle->backend.socket.type = P_TCP_CONNECTION;
+    client_handle->backend.socket.fd = sockCli;
+    client_handle->backend.socket.is_connected = true;
 
     return client_handle;
 }
@@ -134,47 +135,42 @@ ssize_t pesma_udp_receive(PHandle* handle, size_t len)
 /* Socket utils */
 
 int pesma_socket_shutdown(PHandle* handle, int how)
-{
-    return 0;
-}
+{ return 0; }
 
 int pesma_socket_set_reuseaddr(PHandle* handle, bool enable)
 {
-    return 0;
+    int optval = enable;
+    return setsockopt(handle->backend.file.fd, SOL_SOCKET, SO_REUSEADDR, &optval, 4);
 }
-
 
 int pesma_socket_set_keepalive(PHandle* handle, bool enable)
 {
-    return 0;
+    if(handle->backend.socket.type == P_UDP){
+        printf("Cannot enable KEEPALIVE on UDP socket");
+        return -1;
+    }
+    int optval = enable;
+    return setsockopt(handle->backend.file.fd, SOL_SOCKET, SO_KEEPALIVE, &optval, 4);
 }
-
 
 int pesma_socket_set_nodelay(PHandle* handle, bool enable)
 {
-    return 0;
+    if(handle->backend.socket.type == P_UDP){
+        printf("Cannot enable TCP_NODELAY on UDP socket");
+        return -1;
+    }
+    int optval = enable;
+    return setsockopt(handle->backend.file.fd, IPPROTO_TCP, TCP_NODELAY, &optval, 4);
 }
-
 
 int pesma_socket_get_peer(PHandle* handle, char* ip_str, size_t ip_len, uint16_t* port)
-{
-    return 0;
-}
-
+{ return 0; }
 
 int pesma_socket_get_local(PHandle* handle, char* ip_str, size_t ip_len, uint16_t* port)
-{
-    return 0;
-}
-
+{ return 0; }
 
 int pesma_socket_get_error(PHandle* handle)
-{
-    return 0;
-}
-
+{ return 0; }
 
 bool pesma_socket_is_connected(PHandle* handle)
-{
-    return 0;
-}
+{ return 0; }
