@@ -6,7 +6,7 @@ BDIR = build
 
 # Compiler & flags
 CC = gcc
-CFLAGS = -g -I$(IDIR) -std=c99
+CFLAGS = -g -I$(IDIR) -std=c99 -D_POSIX_C_SOURCE=200809L
 LDFLAGS = -L$(BDIR) -Wl,-rpath=$(BDIR)
 
 # Sources

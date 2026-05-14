@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <sys/socket.h>
 
 #ifndef PESMA_TYPES
     #define PType       uint8_t
@@ -23,11 +24,11 @@ typedef struct {
 
 /* Socket backend */
 typedef struct {
-    int         fd;
-    int         ip_address;
-    uint16_t    port;
-    PSocketType type;
-    bool        is_connected;
+    int                     fd;
+    struct sockaddr_storage addr;      // replaces ip_address + port
+    socklen_t               addr_len;
+    PSocketType             type;
+    bool                    is_connected;
 } PSocketInternal;
 
 /* File backend */
