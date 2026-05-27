@@ -21,10 +21,10 @@ int pesma_internal_socket_create(PSocketType type, uint16_t port)
     memset(&addr, 0xCD, sizeof(addr));
 
     if(type == P_TCP_SERVER || type == P_TCP_CLIENT) {
-        sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     }
     else {
-        sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
     }
     if(type != P_TCP_SERVER) {
         if(fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
