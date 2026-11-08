@@ -19,7 +19,7 @@ int pesma_network_wait(PHandle* handle, bool wait_for_read, bool wait_for_write,
 int pesma_handle_free(PHandle* handle)
 {
     //TODO: Cleaner logic here.
-    if(handle->type == P_TYPE_FILE) {
+    if(handle->type == P_TYPE_FILE || handle->type == P_TYPE_FIFO) {
         free(handle->backend.file.path);
         close(handle->backend.file.fd);
     }
@@ -147,11 +147,9 @@ ssize_t pesma_internal_write(PHandle* handle, size_t size, void* value, const ch
         fprintf(stderr, "[PESMA] The write buffer size is to small to write %s\n", message);
         return 1;
     }
-    casted_value = *(uint64_t*) value;
-    while(--counter >= 0) {
-        uint8_t byte = (casted_value >> counter * 8) & 0xFF;
-        data[handle->write_buffer.used++] = byte;
-    }
+    uint8_t* bytes = (uint8_t*)value;
+    for (size_t i = size; i > 0; i--)
+        data[handle->write_buffer.used++] = bytes[i - 1];
     return 0;
 }
 
@@ -251,7 +249,7 @@ uint64_t pesma_internal_read(PHandle* handle, size_t size, const char* message)
     }
     while(--counter >= 0) {
         uint8_t byte = data[handle->read_buffer.pos++];
-        value |= byte << counter * 8;
+        value |= (uint64_t)byte << counter * 8;
     }
     return value;
 }

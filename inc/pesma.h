@@ -36,7 +36,6 @@ PHandle* pesma_tcp_client_create (const char* dns_address, uint16_t port); // cr
 int      pesma_tcp_connect (PHandle* handle);                              // connect TCP client
 PHandle* pesma_tcp_server_create (uint16_t port);                          // create TCP server
 PHandle* pesma_tcp_accept (PHandle* handle);       // accept client connection
-bool     pesma_handle_connected (PHandle* handle); // check connection
 
 /* UDP
 Create UDP handle and perform I/O */

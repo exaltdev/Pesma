@@ -18,7 +18,7 @@ int pesma_internal_socket_create(PSocketType type, uint16_t port)
 
     struct sockaddr_in addr;
 
-    memset(&addr, 0xCD, sizeof(addr));
+    memset(&addr, 0, sizeof(addr));
 
     if(type == P_TCP_SERVER || type == P_TCP_CLIENT) {
         sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -62,7 +62,7 @@ PHandle* pesma_tcp_client_create(const char* dns_address, uint16_t port)
 
     pesma_internal_buffers_create(handle, P_SOCKET_BUFFER_SIZE);
 
-    memset(&hints, 0xCD, sizeof(hints));
+    memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
 
@@ -98,7 +98,7 @@ PHandle* pesma_tcp_server_create(uint16_t port)
     struct sockaddr_in* addr;
 
     handle = malloc(sizeof(*handle));
-    memset(handle, 0xCD, sizeof(PHandle));
+    memset(handle, 0, sizeof(PHandle));
     handle->type = P_TYPE_SOCKET;
     sockServ = pesma_internal_socket_create(P_TCP_SERVER, port);
 
@@ -131,7 +131,7 @@ PHandle* pesma_tcp_accept(PHandle* handle)
     }
 
     client_handle = malloc(sizeof(*handle));
-    memset(client_handle, 0xCD, sizeof(PHandle));
+    memset(client_handle, 0, sizeof(PHandle));
     client_handle->type = P_TYPE_SOCKET;
 
     pesma_internal_buffers_create(client_handle, P_SOCKET_BUFFER_SIZE);
@@ -146,10 +146,6 @@ PHandle* pesma_tcp_accept(PHandle* handle)
     return client_handle;
 }
 
-bool pesma_handle_connected(PHandle* handle)
-{
-    return false;
-}
 
 /* UDP */
 

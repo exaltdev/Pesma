@@ -69,4 +69,4 @@ todos.log
 *.txt
 
 # build dir
-build/*
+build

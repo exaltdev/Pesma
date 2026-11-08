@@ -110,7 +110,7 @@ off_t pesma_file_size(PHandle* handle)
     return size;
 }
 
-off_t pesma_file_seek(PHandle* handle, long offset, int whence)
+off_t pesma_file_seek(PHandle* handle, off_t offset, int whence)
 {
     return lseek(handle->backend.file.fd, offset, whence);
 }
