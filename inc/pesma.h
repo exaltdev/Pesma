@@ -35,7 +35,7 @@ Create TCP client/server and perform I/O */
 PHandle* pesma_tcp_client_create (const char* dns_address, uint16_t port); // create TCP client
 int      pesma_tcp_connect (PHandle* handle);                              // connect TCP client
 PHandle* pesma_tcp_server_create (uint16_t port);                          // create TCP server
-PHandle* pesma_tcp_accept (PHandle* handle);       // accept client connection
+PHandle* pesma_tcp_accept (PHandle* handle); // accept client connection
 
 /* UDP
 Create UDP handle and perform I/O */
@@ -46,7 +46,7 @@ int      pesma_udp_connect (PHandle* handle);                       // optional 
 General purpose socket operations */
 int  pesma_socket_shutdown (PHandle* handle, int how);          // SHUT_RD, SHUT_WR, SHUT_RDWR
 int  pesma_socket_set_reuseaddr (PHandle* handle, bool enable); // SO_REUSEADDR
-int  pesma_socket_set_nonblock (PHandle* handle); // SO_NONBLOCk
+int  pesma_socket_set_nonblock (PHandle* handle);               // SO_NONBLOCk
 int  pesma_socket_set_keepalive (PHandle* handle, bool enable); // TCP keepalive
 int  pesma_socket_set_nodelay (PHandle* handle, bool enable);   // TCP_NODELAY
 int  pesma_socket_get_peer (PHandle* handle, char* ip_str, size_t ip_len, uint16_t* port);
@@ -73,7 +73,7 @@ PType pesma_handle_get_type (PHandle* handle); // get handle type
 int   pesma_network_wait (PHandle* handle,
                           bool     wait_for_read,
                           bool     wait_for_write,
-                          int      timeout_ms);        // wait until readable/writable
+                          int      timeout_ms);             // wait until readable/writable
 int   pesma_handle_free (PHandle* handle);             // close socket/file/buffer and free
 int   pesma_buffer_clear (PHandle* handle, char type); // clears selected buffer in handle
 
@@ -98,25 +98,24 @@ ssize_t pesma_write_float (PHandle* handle, float value);
 ssize_t pesma_write_double (PHandle* handle, double value);
 
 ssize_t pesma_write_char (PHandle* handle, char value);
-ssize_t pesma_write_string (PHandle* handle, const char* str);
+ssize_t pesma_write_string (PHandle* handle, const char* str, size_t length);
 
 /* Typed read helpers
 Read basic types or strings */
+ssize_t pesma_read_int8(PHandle* handle, int8_t* value);
+ssize_t pesma_read_int16(PHandle* handle, int16_t* value);
+ssize_t pesma_read_int32(PHandle* handle, int32_t* value);
+ssize_t pesma_read_int64(PHandle* handle, int64_t* value);
 
-int8_t  pesma_read_int8 (PHandle* handle);
-int16_t pesma_read_int16 (PHandle* handle);
-int32_t pesma_read_int32 (PHandle* handle);
-int64_t pesma_read_int64 (PHandle* handle);
+ssize_t pesma_read_uint8(PHandle* handle, uint8_t* value);
+ssize_t pesma_read_uint16(PHandle* handle, uint16_t* value);
+ssize_t pesma_read_uint32(PHandle* handle, uint32_t* value);
+ssize_t pesma_read_uint64(PHandle* handle, uint64_t* value);
 
-uint8_t  pesma_read_uint8 (PHandle* handle);
-uint16_t pesma_read_uint16 (PHandle* handle);
-uint32_t pesma_read_uint32 (PHandle* handle);
-uint64_t pesma_read_uint64 (PHandle* handle);
+ssize_t pesma_read_float(PHandle* handle, float* value);
+ssize_t pesma_read_double(PHandle* handle, double* value);
 
-float  pesma_read_float (PHandle* handle);
-double pesma_read_double (PHandle* handle);
-
-char    pesma_read_char (PHandle* handle);
-ssize_t pesma_read_string (PHandle* handle, char* dst, size_t max_len);
+ssize_t pesma_read_char(PHandle* handle, char* value);
+ssize_t pesma_read_string(PHandle* handle, char* dst, size_t length);
 
 #endif

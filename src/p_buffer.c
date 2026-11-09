@@ -12,17 +12,13 @@ PHandle* pesma_buffer_create(size_t capacity)
 }
 
 void pesma_buffer_sync(PHandle* handle){
-    int pos = handle->write_buffer.pos;
+    int front = handle->write_buffer.front;
+    int back = handle->write_buffer.back;
     int used = handle->write_buffer.used;
-    int size = handle->write_buffer.size;
-    if(pos >= used)
-        pesma_buffer_clear(handle, 'r');//Not needed?
-    else
-        memmove(handle->write_buffer.data, handle->write_buffer.data + pos, used - pos);
     
-    handle->read_buffer.used = used - pos;
-    handle->write_buffer.used = used - pos;
-    handle->read_buffer.pos = 0;
-    
+    handle->read_buffer.used = used;
+    handle->read_buffer.front = front;
+    handle->read_buffer.back = back;
+
     return;
 }

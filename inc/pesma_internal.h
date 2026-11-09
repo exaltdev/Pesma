@@ -19,7 +19,8 @@ typedef struct {
     uint8_t* data;
     size_t   size;
     size_t   used;
-    size_t   pos;
+    size_t   front;
+    size_t   back;
 } PBuffer;
 
 /* Socket backend */
@@ -39,6 +40,7 @@ typedef struct {
 
 /* Handle struct */
 struct PHandle {
+    //TODO: fd appears in both backends and as such can be moved out of backend
     PType   type;
     PBuffer read_buffer;
     PBuffer write_buffer;
@@ -55,8 +57,8 @@ int internal_flush (PHandle* handle);
 int pesma_internal_parse_mode(const char* mode);
 int pesma_internal_socket_create(PSocketType type, uint16_t port);
 void     pesma_internal_buffers_create (PHandle* handle, size_t size);
-ssize_t  pesma_internal_write (PHandle* handle, size_t size, void* value, const char* message);
-uint64_t pesma_internal_read (PHandle* handle, size_t size, const char* message);
+ssize_t  pesma_internal_write (PHandle* handle, size_t type_size, void* value, const char* message);
+ssize_t pesma_internal_read (PHandle* handle, size_t type_size, void* value, const char* message);
 
 
 #endif

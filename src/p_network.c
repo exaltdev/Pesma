@@ -151,29 +151,34 @@ PHandle* pesma_tcp_accept(PHandle* handle)
 
 PHandle* pesma_udp_create(const char* dns_address, uint16_t port)
 {
+    fprintf(stderr, "[PESMA] %s not implemented\n", __func__);
     return NULL;
 }
 
 int pesma_udp_connect(PHandle* handle)
 {
-    return 0;
+    fprintf(stderr, "[PESMA] %s not implemented\n", __func__);
+    return -1;
 }
 
 ssize_t pesma_udp_send(PHandle* handle, size_t len)
 {
-    return 0;
+    fprintf(stderr, "[PESMA] %s not implemented\n", __func__);
+    return -1;
 }
 
 ssize_t pesma_udp_receive(PHandle* handle, size_t len)
 {
-    return 0;
+    fprintf(stderr, "[PESMA] %s not implemented\n", __func__);
+    return -1;
 }
 
 /* Socket utils */
 
 int pesma_socket_shutdown(PHandle* handle, int how)
 {
-    return 0;
+    fprintf(stderr, "[PESMA] %s not implemented\n", __func__);
+    return -1;
 }
 
 int pesma_socket_set_reuseaddr(PHandle* handle, bool enable)
@@ -235,10 +240,12 @@ int pesma_socket_get_local(PHandle* handle, char* ip_str, size_t ip_len, uint16_
 
 int pesma_socket_get_error(PHandle* handle)
 {
-    return 0;
+    fprintf(stderr, "[PESMA] %s not implemented\n", __func__);
+    return -1;
 }
 
 bool pesma_socket_is_connected(PHandle* handle)
 {
-    return 0;
+    fprintf(stderr, "[PESMA] %s not implemented\n", __func__);
+    return -1;
 }
