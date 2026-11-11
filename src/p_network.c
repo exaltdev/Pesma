@@ -12,86 +12,13 @@
 #include <sys/types.h>
 
 /* TCP */
-int pesma_internal_socket_create(PSocketType type, uint16_t port)
+
+PHandle* pesma_tcp_connect(const char* host, uint16_t port)
 {
-    int sock;
-
-    struct sockaddr_in addr;
-
-    memset(&addr, 0, sizeof(addr));
-
-    if(type == P_TCP_SERVER || type == P_TCP_CLIENT) {
-        sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-    }
-    else {
-        sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    }
-    if(type != P_TCP_SERVER) {
-        if(fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
-            exit(1);  //checkerr
-        }
-    }
-    if(type != P_TCP_CLIENT) {
-        addr.sin_family = AF_INET;
-        addr.sin_port = htons(port);
-        addr.sin_addr.s_addr = htonl(INADDR_ANY);
-        if(bind(sock, (struct sockaddr*) &addr, sizeof(struct sockaddr)) != 0) {
-            perror("bind fail");
-            exit(1);  //checkerr
-        }
-        if(type == P_TCP_SERVER) {
-            if(listen(sock, SOMAXCONN) < 0)
-                exit(1);  //checkerr
-        }
-    }
-    return sock;
+    return NULL;
 }
 
-PHandle* pesma_tcp_client_create(const char* dns_address, uint16_t port)
-{
-    int sockCli;
-    PHandle* handle;
-    struct addrinfo hints;
-    struct addrinfo* res;
-    char port_str[6];
-
-    handle = malloc(sizeof(*handle));
-    memset(handle, 0xCD, sizeof(PHandle));
-    handle->type = P_TYPE_SOCKET;
-    sockCli = pesma_internal_socket_create(P_TCP_CLIENT, port);
-
-    pesma_internal_buffers_create(handle, P_SOCKET_BUFFER_SIZE);
-
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-
-    snprintf(port_str, sizeof(port_str), "%u", port);
-
-    int ret = getaddrinfo(dns_address, port_str, &hints, &res);
-    if(ret != 0) {
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(ret));
-        return NULL;
-    }
-
-    memcpy(&handle->backend.socket.addr, res->ai_addr, res->ai_addrlen);
-    handle->backend.socket.addr_len = res->ai_addrlen;
-    freeaddrinfo(res);
-
-    handle->backend.socket.type = P_TCP_CLIENT;
-    handle->backend.socket.fd = sockCli;
-    handle->backend.socket.is_connected = false;
-    return handle;
-}
-
-int pesma_tcp_connect(PHandle* handle)
-{
-    return connect(handle->backend.socket.fd,
-        (struct sockaddr*) &handle->backend.socket.addr,
-        handle->backend.socket.addr_len);
-}
-
-PHandle* pesma_tcp_server_create(uint16_t port)
+PHandle* pesma_tcp_listen(uint16_t port)
 {
     PHandle* handle;
     int sockServ;
@@ -100,7 +27,7 @@ PHandle* pesma_tcp_server_create(uint16_t port)
     handle = malloc(sizeof(*handle));
     memset(handle, 0, sizeof(PHandle));
     handle->type = P_TYPE_SOCKET;
-    sockServ = pesma_internal_socket_create(P_TCP_SERVER, port);
+    //sockServ = pesma_internal_socket_create(P_TCP_SERVER, port);
 
     //TODO: do this in generic socket builder since the info is build there anyway
     addr = (struct sockaddr_in*) &handle->backend.socket.addr;
@@ -146,7 +73,6 @@ PHandle* pesma_tcp_accept(PHandle* handle)
     return client_handle;
 }
 
-
 /* UDP */
 
 PHandle* pesma_udp_create(const char* dns_address, uint16_t port)
@@ -155,19 +81,19 @@ PHandle* pesma_udp_create(const char* dns_address, uint16_t port)
     return NULL;
 }
 
-int pesma_udp_connect(PHandle* handle)
+PHandle* pesma_udp_bind(uint16_t port)
+{
+    fprintf(stderr, "[PESMA] %s not implemented\n", __func__);
+    return NULL;
+}
+
+ssize_t pesma_udp_send_to(PHandle* handle, const char* host, uint16_t port)
 {
     fprintf(stderr, "[PESMA] %s not implemented\n", __func__);
     return -1;
 }
 
-ssize_t pesma_udp_send(PHandle* handle, size_t len)
-{
-    fprintf(stderr, "[PESMA] %s not implemented\n", __func__);
-    return -1;
-}
-
-ssize_t pesma_udp_receive(PHandle* handle, size_t len)
+ssize_t pesma_udp_recv_from(PHandle* handle, char* out_host, size_t out_len, uint16_t* out_port)
 {
     fprintf(stderr, "[PESMA] %s not implemented\n", __func__);
     return -1;

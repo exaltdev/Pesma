@@ -30,41 +30,41 @@ int pesma_handle_free(PHandle* handle)
 
 int pesma_buffer_clear(PHandle* handle, char type)
 {
-    PBuffer* buf;
+    PBuffer* buff;
     if(type == 'w')
-        buf = &(handle->write_buffer);
+        buff = &(handle->write_buffer);
     else if(type == 'r')
-        buf = &(handle->read_buffer);
+        buff = &(handle->read_buffer);
     else {
         fprintf(stderr, "[PESMA] Attempting to clear nonexistant buffer type\n");
         return -1;
     }
 
-    memset(buf->data, 0, buf->size);
-    buf->used = 0;
-    buf->front = 0;
-    buf->back = 0;
+    memset(buff->data, 0, buff->size);
+    buff->used = 0;
+    buff->front = 0;
+    buff->back = 0;
     return 0;
 }
 
 void pesma_internal_buffers_create(PHandle* handle, size_t size)
 {
-    PBuffer* buf = &(handle->write_buffer);
+    PBuffer* buff = &(handle->write_buffer);
     uint8_t* data = calloc(size, 1);
-    buf->data = data;
-    buf->size = size;
-    buf->used = 0;
-    buf->front = 0;
-    buf->back = 0;
+    buff->data = data;
+    buff->size = size;
+    buff->used = 0;
+    buff->front = 0;
+    buff->back = 0;
 
-    buf = &(handle->read_buffer);
+    buff = &(handle->read_buffer);
     if(handle->type != P_TYPE_BUFFER)
         data = calloc(size, 1);
-    buf->data = data;
-    buf->size = size;
-    buf->used = 0;
-    buf->front = 0;
-    buf->back = 0;
+    buff->data = data;
+    buff->size = size;
+    buff->used = 0;
+    buff->front = 0;
+    buff->back = 0;
     return;
 }
 
@@ -89,31 +89,31 @@ ssize_t pesma_recv(PHandle* handle, size_t len)
     default: return -1;
     }
 
-    PBuffer* b = &handle->read_buffer;
-    size_t space = b->size - b->used;
+    PBuffer* buff= &handle->read_buffer;
+    size_t space = buff->size - buff->used;
     size_t to_read = len < space ? len : space;
     if(to_read == 0)
         return 0;
 
-    size_t first = b->size - b->front;
+    size_t first = buff->size - buff->front;
     if(first > to_read)
         first = to_read;
 
     ssize_t n =
-        is_socket ? recv(fd, b->data + b->front, first, 0) : read(fd, b->data + b->front, first);
+        is_socket ? recv(fd, buff->data + buff->front, first, 0) : read(fd, buff->data + buff->front, first);
     if(n <= 0)
         return n;
 
-    b->front = (b->front + (size_t) n) % b->size;
-    b->used += (size_t) n;
+    buff->front = (buff->front + (size_t) n) % buff->size;
+    buff->used += (size_t) n;
     ssize_t total = n;
 
     if((size_t) n == first && to_read > first) {
         size_t second = to_read - first;
-        n = is_socket ? recv(fd, b->data, second, 0) : read(fd, b->data, second);
+        n = is_socket ? recv(fd, buff->data, second, 0) : read(fd, buff->data, second);
         if(n > 0) {
-            b->front = (size_t) n % b->size;
-            b->used += (size_t) n;
+            buff->front = (size_t) n % buff->size;
+            buff->used += (size_t) n;
             total += n;
         }
     }
@@ -137,34 +137,64 @@ ssize_t pesma_send(PHandle* handle, size_t len)
     default: return -1;
     }
 
-    PBuffer* b = &handle->write_buffer;
-    size_t to_send = len < b->used ? len : b->used;
+    PBuffer* buff= &handle->write_buffer;
+    size_t to_send = len < buff->used ? len : buff->used;
     if(to_send == 0)
         return 0;
 
-    size_t first = b->size - b->back;
+    size_t first = buff->size - buff->back;
     if(first > to_send)
         first = to_send;
 
     ssize_t n =
-        is_socket ? send(fd, b->data + b->back, first, 0) : write(fd, b->data + b->back, first);
+        is_socket ? send(fd, buff->data + buff->back, first, 0) : write(fd, buff->data + buff->back, first);
     if(n <= 0)
         return n;
 
-    b->back = (b->back + (size_t) n) % b->size;
-    b->used -= (size_t) n;
+    buff->back = (buff->back + (size_t) n) % buff->size;
+    buff->used -= (size_t) n;
     ssize_t total = n;
 
     if((size_t) n == first && to_send > first) {
         size_t second = to_send - first;
-        n = is_socket ? send(fd, b->data, second, 0) : write(fd, b->data, second);
+        n = is_socket ? send(fd, buff->data, second, 0) : write(fd, buff->data, second);
         if(n > 0) {
-            b->back = (size_t) n % b->size;
-            b->used -= (size_t) n;
+            buff->back = (size_t) n % buff->size;
+            buff->used -= (size_t) n;
             total += n;
         }
     }
     return total;
+}
+
+/* BE bytes -> native value */
+void pesma_internal_be_to_value(const uint8_t* in, size_t size, void* value)
+{
+    static const uint16_t probe = 1;
+    int host_is_le = *(const uint8_t*) &probe == 1;
+
+    uint8_t* bytes = (uint8_t*) value;
+    if(host_is_le) {
+        for(size_t i = 0; i < size; i++) bytes[i] = in[size - 1 - i];
+    }
+    else {
+        memcpy(bytes, in, size);
+    }
+}
+
+/* Native value -> BE bytes */
+void pesma_internal_value_to_be(uint8_t* out, size_t size, void* value)
+{
+    static const uint16_t probe = 1;
+    int host_is_le = *(const uint8_t*) &probe == 1;
+
+    const uint8_t* bytes = (const uint8_t*) value;
+    if(host_is_le) {
+        for(size_t i = 0; i < size; i++) out[i] = bytes[size - 1 - i];
+    }
+    else {
+        memcpy(out, bytes, size);
+    }
 }
 
 /* Typed write helpers */
@@ -172,7 +202,7 @@ ssize_t pesma_send(PHandle* handle, size_t len)
 ssize_t pesma_internal_write(PHandle* handle, size_t type_size, void* value, const char* message)
 {
     uint8_t* data;
-    uint8_t* bytes;
+    uint8_t bytes[P_MAX_TYPE_SIZE] = {0};
 
     data = handle->write_buffer.data;
 
@@ -180,9 +210,11 @@ ssize_t pesma_internal_write(PHandle* handle, size_t type_size, void* value, con
         fprintf(stderr, "[PESMA] The write buffer size is to small to write %s\n", message);
         return -1;
     }
-    bytes = (uint8_t*) value;
-    for(size_t i = type_size; i > 0; i--) {
-        data[handle->write_buffer.front++] = bytes[i - 1];
+
+    pesma_internal_value_to_be(bytes, type_size, value);
+
+    for(size_t i = 0; i < type_size; i++) {
+        data[handle->write_buffer.front++] = bytes[i];
         handle->write_buffer.front %= handle->write_buffer.size;
         handle->write_buffer.used++;
     }
@@ -272,7 +304,7 @@ ssize_t pesma_write_string(PHandle* handle, const char* str, size_t length)
 ssize_t pesma_internal_read(PHandle* handle, size_t type_size, void* value, const char* message)
 {
     uint8_t* data;
-    uint8_t* bytes;
+    uint8_t bytes[P_MAX_TYPE_SIZE] = {0};
 
     data = handle->read_buffer.data;
     if(type_size > handle->read_buffer.used) {
@@ -281,13 +313,14 @@ ssize_t pesma_internal_read(PHandle* handle, size_t type_size, void* value, cons
             message);
         return -1;
     }
-    bytes = (uint8_t*) value;
-
-    for(size_t i = type_size; i > 0; i--) {
-        bytes[i - 1] = data[handle->read_buffer.back++];
+    for(size_t i = 0; i < type_size; i++) {
+        bytes[i] = data[handle->read_buffer.back++];
         handle->read_buffer.back %= handle->read_buffer.size;
         handle->read_buffer.used--;
     }
+
+    pesma_internal_be_to_value(bytes, type_size, value);
+
     return 0;
 }
 
@@ -353,9 +386,7 @@ ssize_t pesma_read_string(PHandle* handle, char* dst, size_t length)
 
     if(handle->read_buffer.used < length) {
         fprintf(stderr,
-            "[PESMA] Attempting to read string length %ld while there is not enough space in " "buf"
-                                                                                               "fer"
-                                                                                               "\n",
+            "[PESMA] Attempting to read string length %ld while there is not enough space in " "buf" "fer" "\n",
             length);
         return -1;
     }

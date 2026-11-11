@@ -40,8 +40,8 @@ PHandle* pesma_tcp_accept (PHandle* server);                  // accept pending 
 Create UDP handle and perform I/O */
 PHandle* pesma_udp_connect (const char* host, uint16_t port); // connected UDP: send/recv
 PHandle* pesma_udp_bind (uint16_t port);                      // bound UDP: recv from anyone
-ssize_t  pesma_udp_send_to (PHandle* h, const char* host, uint16_t port);
-ssize_t pesma_udp_recv_from (PHandle* h, char* out_host, size_t out_len, uint16_t* out_port);
+ssize_t  pesma_udp_send_to (PHandle* handle, const char* host, uint16_t port);
+ssize_t  pesma_udp_recv_from (PHandle* handle, char* out_host, size_t out_len, uint16_t* out_port);
 
 /* Socket general
 General purpose socket operations */

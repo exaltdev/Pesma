@@ -13,6 +13,7 @@
 #endif
 
 #define P_SOCKET_BUFFER_SIZE 65536
+#define P_MAX_TYPE_SIZE      8
 
 /* Shared read/write buffer */
 typedef struct {
@@ -26,7 +27,7 @@ typedef struct {
 /* Socket backend */
 typedef struct {
     int                     fd;
-    struct sockaddr_storage addr;      // replaces ip_address + port
+    struct sockaddr_storage addr; // replaces ip_address + port
     socklen_t               addr_len;
     PSocketType             type;
     bool                    is_connected;
@@ -53,12 +54,14 @@ struct PHandle {
 typedef struct PHandle PHandle;
 
 /* Internal helper functions */
-int internal_flush (PHandle* handle);
-int pesma_internal_parse_mode(const char* mode);
-int pesma_internal_socket_create(PSocketType type, uint16_t port);
-void     pesma_internal_buffers_create (PHandle* handle, size_t size);
-ssize_t  pesma_internal_write (PHandle* handle, size_t type_size, void* value, const char* message);
+int     internal_flush (PHandle* handle);
+int     pesma_internal_parse_mode (const char* mode);
+int     pesma_internal_socket_create (PSocketType type, uint16_t port);
+void    pesma_internal_buffers_create (PHandle* handle, size_t size);
+ssize_t pesma_internal_write (PHandle* handle, size_t type_size, void* value, const char* message);
 ssize_t pesma_internal_read (PHandle* handle, size_t type_size, void* value, const char* message);
 
+void pesma_internal_be_to_value (const uint8_t* in, size_t size, void* value);
+void pesma_internal_value_to_be (uint8_t* out, size_t size, void* value);
 
 #endif

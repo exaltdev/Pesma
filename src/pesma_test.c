@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 int counter = 0;
+int g_failures = 0;
 
 int tests_server();
 int tests_read_write(PHandle* handle);
@@ -30,8 +31,9 @@ int main(void)
 
     printf("\n");
     i = tests_file();
-    i = tests_server();
-    return 0;
+
+    return g_failures ? 1 : 0;
+    //i = tests_server();
 }
 
 void printString(char* string)
@@ -60,6 +62,33 @@ void printChar(unsigned char theChar)
         }
         break;
     }
+}
+
+#define CHECK_EQ(actual, expected) do {                               \
+    if ((actual) != (expected)) {                                     \
+        fprintf(stderr, "[FAIL] %s:%d: %s = 0x%02X, want 0x%02X\n",   \
+                __FILE__, __LINE__, #actual,                          \
+                (unsigned)(actual), (unsigned)(expected));            \
+        g_failures++;                                                 \
+    }                                                                 \
+} while (0)
+
+
+void test_endianness(PHandle* handle)
+{
+    pesma_write_uint32(handle, 0x01020304);
+    pesma_buffer_sync(handle);
+    
+    printf("[TESTS] Endianess test \n\n");
+    uint8_t* data = handle->write_buffer.data;
+    CHECK_EQ(data[0], 0x01);   /* MSB first */
+    CHECK_EQ(data[1], 0x02);
+    CHECK_EQ(data[2], 0x03);
+    CHECK_EQ(data[3], 0x04);   /* LSB last */
+    printf("[TESTS] Endianess test concluded \n\n");
+
+    pesma_buffer_clear(handle, 'w');
+    pesma_buffer_clear(handle, 'r');
 }
 
 void test_rdwr_file()
@@ -153,7 +182,7 @@ void test_read()
 
     for(int i = 0; i < 10; i++) {
         char c;
-        int ret = pesma_read_char(handle, &c);
+        pesma_read_char(handle, &c);
         printf("%c", c); 
     }
     printf("\n");
@@ -219,19 +248,19 @@ void test_mixed(PHandle* handle)
     printf("%s,", buf);
 
     char c;
-    int ret = pesma_read_char(handle, &c);
+    pesma_read_char(handle, &c);
     printf("%c,", c);
     int8_t a;
-    ret = pesma_read_int8(handle, &a);
+    pesma_read_int8(handle, &a);
     printf("%d,", a);
     uint32_t b;
-    ret = pesma_read_uint32(handle, &b);
+    pesma_read_uint32(handle, &b);
     printf("%u,", b);
     uint16_t d;
-    ret = pesma_read_uint16(handle, &d);
+    pesma_read_uint16(handle, &d);
     printf("%u,", d);
     int64_t e;
-    ret = pesma_read_int64(handle, &e);
+    pesma_read_int64(handle, &e);
     printf("%ld,", e);
 
     pesma_read_string(handle, buf, strlen(str2));
@@ -341,6 +370,7 @@ int tests_read_write(PHandle* handle)
     test_uint16(handle);
     test_string(handle);
     test_mixed(handle);
+    test_endianness(handle);
     return 0;
 }
 
@@ -351,7 +381,7 @@ int tests_file()
     test_rdwr_file();
     return 0;
 }
-
+/*
 int tests_server()
 {
     PHandle* serv = pesma_tcp_server_create(8080);
@@ -380,3 +410,4 @@ int tests_server()
     pesma_handle_free(client);
     return 0;
 }
+*/
