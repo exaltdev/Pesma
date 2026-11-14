@@ -27,8 +27,6 @@ typedef enum {
 
 #define PATH_MAX 4096
 
-#define SOCKET_BUFFER_SIZE 65536
-#define FILE_BUFFER_SIZE   65536
 
 /* TCP
 Create TCP client/server and perform I/O */
@@ -53,7 +51,6 @@ int  pesma_socket_set_nodelay (PHandle* handle, bool enable);   // TCP_NODELAY
 int  pesma_socket_get_error (PHandle* handle);                  // getsockopt SO_ERROR
 int  pesma_socket_get_peer (PHandle* handle, char* ip_str, size_t ip_len, uint16_t* port);
 int  pesma_socket_get_local (PHandle* handle, char* ip_str, size_t ip_len, uint16_t* port);
-bool pesma_socket_is_connected (PHandle* handle);
 
 /* File
 Open, read/write, seek, size operations */

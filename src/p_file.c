@@ -50,12 +50,18 @@ PHandle* pesma_file_open(const char* path, const char* mode)
         return NULL;
 
     PHandle* handle = malloc(sizeof(PHandle));
+    if(handle == NULL) {
+        fprintf(stderr, "[PESMA] malloc fail\n");
+        close(fd);
+        return NULL;
+    }
     handle->type = P_TYPE_FILE;
     pesma_internal_buffers_create(handle, FILE_BUFFER_SIZE);
     handle->backend.file.fd = fd;
     //TODO: strcmp the path maybe, maybe something safer we will see..
     handle->backend.file.path = malloc(PATH_MAX);
     if(!handle->backend.file.path) {
+        fprintf(stderr, "[PESMA] malloc fail\n");
         close(fd);
         free(handle);
         return NULL;
@@ -80,12 +86,18 @@ PHandle* pesma_fifo_create(const char* path, const char* mode)
         return NULL;
 
     PHandle* handle = malloc(sizeof(PHandle));
+    if(handle == NULL){
+        fprintf(stderr, "[PESMA] malloc fail\n");
+        close(fd);
+        return NULL;
+    }
     handle->type = P_TYPE_FIFO;
     pesma_internal_buffers_create(handle, FILE_BUFFER_SIZE);
     handle->backend.file.fd = fd;
     //TODO: strcmp the path maybe, maybe something safer we will see..
     handle->backend.file.path = malloc(PATH_MAX);
     if(!handle->backend.file.path) {
+        fprintf(stderr, "[PESMA] malloc fail\n");
         close(fd);
         free(handle);
         return NULL;

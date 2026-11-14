@@ -49,8 +49,13 @@ int pesma_buffer_clear(PHandle* handle, char type)
 
 void pesma_internal_buffers_create(PHandle* handle, size_t size)
 {
+    //TODO(0.2): Clumbersome internal, no error handling for calloc, leaving fprintf for now
     PBuffer* buff = &(handle->write_buffer);
     uint8_t* data = calloc(size, 1);
+    if(data == NULL) {
+        fprintf(stderr, "[PESMA] calloc fail\n");
+        return;
+    }
     buff->data = data;
     buff->size = size;
     buff->used = 0;
@@ -60,6 +65,10 @@ void pesma_internal_buffers_create(PHandle* handle, size_t size)
     buff = &(handle->read_buffer);
     if(handle->type != P_TYPE_BUFFER)
         data = calloc(size, 1);
+    if(data == NULL) {
+        fprintf(stderr, "[PESMA] calloc fail\n");
+        return;
+    }
     buff->data = data;
     buff->size = size;
     buff->used = 0;
@@ -83,13 +92,17 @@ ssize_t pesma_recv(PHandle* handle, size_t len)
     case P_TYPE_FILE:
     case P_TYPE_FIFO: fd = handle->backend.file.fd; break;
     case P_TYPE_SOCKET:
+        if(handle->backend.socket.type == P_TCP_SERVER) {
+            fprintf(stderr, "[PESMA] Attempting i/o on listening socket\n");
+            return -1;
+        }
         fd = handle->backend.socket.fd;
         is_socket = 1;
         break;
     default: return -1;
     }
 
-    PBuffer* buff= &handle->read_buffer;
+    PBuffer* buff = &handle->read_buffer;
     size_t space = buff->size - buff->used;
     size_t to_read = len < space ? len : space;
     if(to_read == 0)
@@ -99,8 +112,8 @@ ssize_t pesma_recv(PHandle* handle, size_t len)
     if(first > to_read)
         first = to_read;
 
-    ssize_t n =
-        is_socket ? recv(fd, buff->data + buff->front, first, 0) : read(fd, buff->data + buff->front, first);
+    ssize_t n = is_socket ? recv(fd, buff->data + buff->front, first, 0)
+                          : read(fd, buff->data + buff->front, first);
     if(n <= 0)
         return n;
 
@@ -131,13 +144,17 @@ ssize_t pesma_send(PHandle* handle, size_t len)
     case P_TYPE_FILE:
     case P_TYPE_FIFO: fd = handle->backend.file.fd; break;
     case P_TYPE_SOCKET:
+        if(handle->backend.socket.type == P_TCP_SERVER) {
+            fprintf(stderr, "[PESMA] Attempting i/o on listening socket\n");
+            return -1;
+        }
         fd = handle->backend.socket.fd;
         is_socket = 1;
         break;
     default: return -1;
     }
 
-    PBuffer* buff= &handle->write_buffer;
+    PBuffer* buff = &handle->write_buffer;
     size_t to_send = len < buff->used ? len : buff->used;
     if(to_send == 0)
         return 0;
@@ -146,8 +163,8 @@ ssize_t pesma_send(PHandle* handle, size_t len)
     if(first > to_send)
         first = to_send;
 
-    ssize_t n =
-        is_socket ? send(fd, buff->data + buff->back, first, 0) : write(fd, buff->data + buff->back, first);
+    ssize_t n = is_socket ? send(fd, buff->data + buff->back, first, 0)
+                          : write(fd, buff->data + buff->back, first);
     if(n <= 0)
         return n;
 
@@ -385,9 +402,7 @@ ssize_t pesma_read_string(PHandle* handle, char* dst, size_t length)
     data = handle->read_buffer.data;
 
     if(handle->read_buffer.used < length) {
-        fprintf(stderr,
-            "[PESMA] Attempting to read string length %ld while there is not enough space in " "buf" "fer" "\n",
-            length);
+        fprintf(stderr, "[PESMA] Not enough space in buffer for %ld byte read\n", length);
         return -1;
     }
 

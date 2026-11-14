@@ -12,8 +12,10 @@
     #define PSocketType uint8_t // shutting up the IDE (internal include remedy)
 #endif
 
-#define P_SOCKET_BUFFER_SIZE 65536
-#define P_MAX_TYPE_SIZE      8
+#define P_SOCKET_BUFFER_SIZE   65536
+#define FILE_BUFFER_SIZE       65536
+#define P_SOCKET_MAX_LISTENERS 10
+#define P_MAX_TYPE_SIZE        8
 
 /* Shared read/write buffer */
 typedef struct {

@@ -13,14 +13,16 @@ int g_failures = 0;
 int tests_server();
 int tests_read_write(PHandle* handle);
 int tests_file();
+void test_tcp_connect_fail(void);
+void test_tcp_pingpong(void);
 
 void printString(char* string);
 void printChar(unsigned char c);
 
-int main(void)
+int main(int argc, char** argv)
 {
     // Minimal test skeleton for pesma library
-    // TODO: implement test logic here
+    // TODO: Improve testing kit, this is a jumbled mess
 
     printf("Pesma test skeleton running...\n");
     PHandle* handle = pesma_buffer_create(1024);
@@ -32,8 +34,13 @@ int main(void)
     printf("\n");
     i = tests_file();
 
+    test_tcp_connect_fail();
+
+    if(argc > 1 && strcmp(argv[1], "net") == 0)
+        tests_server();
+
+    test_tcp_pingpong();
     return g_failures ? 1 : 0;
-    //i = tests_server();
 }
 
 void printString(char* string)
@@ -64,27 +71,32 @@ void printChar(unsigned char theChar)
     }
 }
 
-#define CHECK_EQ(actual, expected) do {                               \
-    if ((actual) != (expected)) {                                     \
-        fprintf(stderr, "[FAIL] %s:%d: %s = 0x%02X, want 0x%02X\n",   \
-                __FILE__, __LINE__, #actual,                          \
-                (unsigned)(actual), (unsigned)(expected));            \
-        g_failures++;                                                 \
-    }                                                                 \
-} while (0)
-
+#define CHECK_EQ(actual, expected)                          \
+    do {                                                    \
+        if((actual) != (expected)) {                        \
+            fprintf(stderr,                                 \
+                "[FAIL] %s:%d: %s = 0x%02X, want 0x%02X\n", \
+                __FILE__,                                   \
+                __LINE__,                                   \
+                #actual,                                    \
+                (unsigned) (actual),                        \
+                (unsigned) (expected));                     \
+            g_failures++;                                   \
+        }                                                   \
+    }                                                       \
+    while(0)
 
 void test_endianness(PHandle* handle)
 {
     pesma_write_uint32(handle, 0x01020304);
     pesma_buffer_sync(handle);
-    
+
     printf("[TESTS] Endianess test \n\n");
     uint8_t* data = handle->write_buffer.data;
-    CHECK_EQ(data[0], 0x01);   /* MSB first */
+    CHECK_EQ(data[0], 0x01); /* MSB first */
     CHECK_EQ(data[1], 0x02);
     CHECK_EQ(data[2], 0x03);
-    CHECK_EQ(data[3], 0x04);   /* LSB last */
+    CHECK_EQ(data[3], 0x04); /* LSB last */
     printf("[TESTS] Endianess test concluded \n\n");
 
     pesma_buffer_clear(handle, 'w');
@@ -183,7 +195,7 @@ void test_read()
     for(int i = 0; i < 10; i++) {
         char c;
         pesma_read_char(handle, &c);
-        printf("%c", c); 
+        printf("%c", c);
     }
     printf("\n");
 
@@ -320,7 +332,7 @@ void test_uint16(PHandle* handle)
     printf("[TESTS] Uint16 testing, uint16 output order: ");
 
     pesma_buffer_sync(handle);
-    
+
     uint16_t c;
     pesma_read_uint16(handle, &c);
     printf("%d\n", c);
@@ -356,7 +368,7 @@ void test_char(PHandle* handle)
     printf("%c,", b);
     char a;
     pesma_read_char(handle, &a);
-    printf("%c\n",a);
+    printf("%c\n", a);
 
     pesma_buffer_clear(handle, 'w');
     pesma_buffer_clear(handle, 'r');
@@ -381,33 +393,115 @@ int tests_file()
     test_rdwr_file();
     return 0;
 }
-/*
-int tests_server()
+
+int tests_server(void)
 {
-    PHandle* serv = pesma_tcp_server_create(8080);
-    //TODO: this does nothing since reuseaddr has to be set before binding.
-    pesma_socket_set_reuseaddr(serv, 1);
+    PHandle* serv = pesma_tcp_listen(8080);
+    if(!serv)
+        return 1;
+
+    printf("[TESTS] Server listening on :8080 — open http://localhost:8080\n");
 
     PHandle* client = pesma_tcp_accept(serv);
+    if(!client) {
+        pesma_handle_free(serv);
+        return 1;
+    }
+
     pesma_recv(client, client->read_buffer.size);
 
-
-    char* buffer = malloc(client->read_buffer.size + 1);
-    memset(buffer, 0, client->read_buffer.size + 1);
-    memmove(buffer, client->read_buffer.data, client->read_buffer.used);
+    char* buffer = malloc(client->read_buffer.used + 1);
+    memset(buffer, 0, client->read_buffer.used + 1);
+    memcpy(buffer, client->read_buffer.data, client->read_buffer.used);
     printString(buffer);
     printf("\n");
+    free(buffer);
 
+    char
+        resp[] =
+            "HTTP/1.0 200 OK\r\n" "Server: pesma-c\r\n" "Content-type: text/html\r\n\r\n" "<html>"
+                                                                                          "hello," " world</" "html>\r\n";
 
-    char resp[] =
-        "HTTP/1.0 200 OK\r\n" "Server: webserver-c\r\n" "Content-type: text/html\r\n\r\n" "<html>" "hello, " "world</" "html>" "\r\n";
-
-    pesma_write_string(client, resp, sizeof(resp));
+    pesma_write_string(client, resp, sizeof(resp) - 1);
     pesma_send(client, client->write_buffer.used);
 
-    free(buffer);
-    pesma_handle_free(serv);
     pesma_handle_free(client);
+    pesma_handle_free(serv);
     return 0;
 }
-*/
+
+void test_tcp_connect_fail(void)
+{
+    printf("[TESTS] TCP connect to closed port (expect NULL)\n");
+    PHandle* h = pesma_tcp_connect("127.0.0.1", 1);
+    CHECK_EQ(h == NULL, 1);
+    if(h)
+        pesma_handle_free(h); /* defensive: fail if connect unexpectedly succeeded */
+    printf("[TESTS] TCP connect fail path OK\n\n");
+}
+
+#include <time.h>
+#include <sys/wait.h>
+
+void test_tcp_pingpong(void)
+{
+    printf("[TESTS] TCP ping-pong (fork)\n");
+
+    pid_t pid = fork();
+    if(pid == 0) {
+        /* child = server */
+        PHandle* serv = pesma_tcp_listen(9090);
+        if(!serv)
+            exit(1);
+        PHandle* c = pesma_tcp_accept(serv);
+        if(!c) {
+            pesma_handle_free(serv);
+            exit(1);
+        }
+
+        /* receive "ping" */
+        pesma_recv(c, 64);
+        char buf[16] = {0};
+        pesma_read_string(c, buf, 4);
+        if(strncmp(buf, "ping", 4) != 0) {
+            pesma_handle_free(c);
+            pesma_handle_free(serv);
+            exit(1);
+        }
+
+        /* send "pong" back */
+        pesma_write_string(c, "pong", 4);
+        pesma_send(c, 4);
+
+        pesma_handle_free(c);
+        pesma_handle_free(serv);
+        exit(0);
+    }
+
+    /* parent = client */
+    struct timespec ts = {.tv_sec = 0, .tv_nsec = 50000000};
+    nanosleep(&ts, NULL); /* let the listener bind */
+    PHandle* h = pesma_tcp_connect("127.0.0.1", 9090);
+    CHECK_EQ(h != NULL, 1);
+    if(!h) {
+        waitpid(pid, NULL, 0);
+        return;
+    }
+
+    pesma_write_string(h, "ping", 4);
+    pesma_send(h, 4);
+
+    pesma_recv(h, 64);
+    char buf[16] = {0};
+    pesma_read_string(h, buf, 4);
+    CHECK_EQ(strncmp(buf, "pong", 4) == 0, 1);
+
+    pesma_handle_free(h);
+
+    int status = 0;
+    waitpid(pid, &status, 0);
+    int child_ok = WIFEXITED(status) && WEXITSTATUS(status) == 0;
+    CHECK_EQ(child_ok, 1);
+    if(child_ok)
+        printf("[TESTS] TCP ping-pong OK\n\n");
+}

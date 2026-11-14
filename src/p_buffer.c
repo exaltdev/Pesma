@@ -6,6 +6,10 @@
 PHandle* pesma_buffer_create(size_t capacity)
 {
     PHandle* handle = malloc(sizeof(PHandle));
+    if(handle == NULL) {
+        fprintf(stderr, "[PESMA] malloc fail\n");
+        return NULL;
+    }
     handle->type = P_TYPE_BUFFER;
     pesma_internal_buffers_create(handle, capacity);
     return handle;
