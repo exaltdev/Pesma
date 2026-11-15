@@ -25,8 +25,13 @@ typedef enum {
 
 #include "pesma_internal.h"
 
+#ifndef PATH_MAX
 #define PATH_MAX 4096
+#endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* TCP
 Create TCP client/server and perform I/O */
@@ -115,5 +120,9 @@ ssize_t pesma_read_double (PHandle* handle, double* value);
 
 ssize_t pesma_read_char (PHandle* handle, char* value);
 ssize_t pesma_read_string (PHandle* handle, char* dst, size_t length);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

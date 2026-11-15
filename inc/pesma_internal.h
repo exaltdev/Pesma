@@ -55,6 +55,10 @@ struct PHandle {
 
 typedef struct PHandle PHandle;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Internal helper functions */
 int     internal_flush (PHandle* handle);
 int     pesma_internal_parse_mode (const char* mode);
@@ -65,5 +69,9 @@ ssize_t pesma_internal_read (PHandle* handle, size_t type_size, void* value, con
 
 void pesma_internal_be_to_value (const uint8_t* in, size_t size, void* value);
 void pesma_internal_value_to_be (uint8_t* out, size_t size, void* value);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
