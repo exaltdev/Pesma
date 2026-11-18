@@ -8,44 +8,11 @@
 
 /* File operations */
 
-int pesma_internal_parse_mode(const char* mode)
+PHandle* pesma_file_open(const char* path, int flags, mode_t mode)
 {
-    int flags = 0;
-    int has_read = 0, has_write = 0;
-
-    for(int i = 0; mode[i] != 0; i++) {
-        switch(mode[i]) {
-        case 'r': has_read = 1; break;
-        case 'w': has_write = 1; break;
-        case 'a': flags |= O_APPEND; break;
-        case 'c': flags |= O_CREAT; break;
-        default : fprintf(stderr, "[PESMA] Invalid mode char: %c\n", mode[i]); return -1;
-        }
-    }
-
-    if(has_read && has_write)
-        flags |= O_RDWR;
-    else if(has_write)
-        flags |= O_WRONLY;
-    else
-        flags |= O_RDONLY;
-    return flags;
-}
-
-PHandle* pesma_file_open(const char* path, const char* mode)
-{
-    int flags = pesma_internal_parse_mode(mode);
-    if(flags == -1)
-        return NULL;
-
     int fd;
 
-    if(flags & O_CREAT) {
-        fd = open(path, flags, S_IRUSR | S_IWUSR);
-    }
-    else {
-        fd = open(path, flags);
-    }
+    fd = open(path, flags, mode);
     if(fd == -1)
         return NULL;
 
@@ -58,35 +25,28 @@ PHandle* pesma_file_open(const char* path, const char* mode)
     handle->type = P_TYPE_FILE;
     pesma_internal_buffers_create(handle, FILE_BUFFER_SIZE);
     handle->backend.file.fd = fd;
-    //TODO: strcmp the path maybe, maybe something safer we will see..
-    handle->backend.file.path = malloc(PATH_MAX);
+    handle->backend.file.path = strdup(path);
     if(!handle->backend.file.path) {
         fprintf(stderr, "[PESMA] malloc fail\n");
         close(fd);
         free(handle);
         return NULL;
     }
-    strcpy(handle->backend.file.path, path);
     return handle;
 }
 
-PHandle* pesma_fifo_create(const char* path, const char* mode)
+PHandle* pesma_fifo_open(const char* path, int flags, mode_t mode)
 {
-    if(mkfifo(path, S_IRUSR | S_IWUSR) == -1) {
-        if(errno != EEXIST)
-            return NULL;
+    if(mkfifo(path, mode) == -1 && errno != EEXIST) {
+        return NULL;  //EACCES, ENOENT, etc.
     }
-
-    int flags = pesma_internal_parse_mode(mode);
-    if(flags == -1)
-        return NULL;
 
     int fd = open(path, flags);
     if(fd == -1)
         return NULL;
 
     PHandle* handle = malloc(sizeof(PHandle));
-    if(handle == NULL){
+    if(handle == NULL) {
         fprintf(stderr, "[PESMA] malloc fail\n");
         close(fd);
         return NULL;
@@ -94,15 +54,13 @@ PHandle* pesma_fifo_create(const char* path, const char* mode)
     handle->type = P_TYPE_FIFO;
     pesma_internal_buffers_create(handle, FILE_BUFFER_SIZE);
     handle->backend.file.fd = fd;
-    //TODO: strcmp the path maybe, maybe something safer we will see..
-    handle->backend.file.path = malloc(PATH_MAX);
+    handle->backend.file.path = strdup(path);
     if(!handle->backend.file.path) {
         fprintf(stderr, "[PESMA] malloc fail\n");
         close(fd);
         free(handle);
         return NULL;
     }
-    strcpy(handle->backend.file.path, path);
     return handle;
 }
 

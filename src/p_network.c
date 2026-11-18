@@ -241,13 +241,13 @@ ssize_t pesma_udp_recv_from(PHandle* handle, char* out_host, size_t out_len, uin
 }
 
 /* Socket utils */
+//TODO: Check !handle before dereferencing
 
 int pesma_socket_shutdown(PHandle* handle, int how)
 {
-    (void) handle;
-    (void) how;
-    fprintf(stderr, "[PESMA] %s not implemented\n", __func__);
-    return -1;
+    if(!handle || handle->type != P_TYPE_SOCKET)
+        return -1;
+    return shutdown(handle->backend.socket.fd, how);
 }
 
 int pesma_socket_set_reuseaddr(PHandle* handle, bool enable)
@@ -270,16 +270,19 @@ int pesma_socket_set_keepalive(PHandle* handle, bool enable)
     return setsockopt(handle->backend.socket.fd, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(optval));
 }
 
-int pesma_socket_set_nonblock(PHandle* handle)
+int pesma_socket_set_nonblock(PHandle* handle, bool enable)
 {
-    (void) handle;
-    return fcntl(handle->backend.socket.fd, F_SETFL, O_NONBLOCK);
+    int flags = fcntl(handle->backend.socket.fd, F_GETFL, 0);
+    if(flags == -1)
+        return -1;
+    int new_flags = enable ? (flags | O_NONBLOCK) : (flags & ~O_NONBLOCK);
+    return fcntl(handle->backend.socket.fd, F_SETFL, new_flags) == -1 ? -1 : 0;
 }
 
 int pesma_socket_set_nodelay(PHandle* handle, bool enable)
 {
     if(handle->backend.socket.type == P_UDP) {
-        printf("Cannot enable TCP_NODELAY on UDP socket");
+        printf("[PESMA] set_nodelay: Cannot enable TCP_NODELAY on UDP socket");
         return -1;
     }
     int optval = enable;
@@ -310,7 +313,15 @@ int pesma_socket_get_local(PHandle* handle, char* ip_str, size_t ip_len, uint16_
 
 int pesma_socket_get_error(PHandle* handle)
 {
-    (void) handle;
-    fprintf(stderr, "[PESMA] %s not implemented\n", __func__);
-    return -1;
+    if(!handle || handle->type != P_TYPE_SOCKET) {
+        fprintf(stderr, "[PESMA] get_error: handle isn't a socket\n");
+        return -1;
+    }
+
+    int err = 0;
+    socklen_t len = sizeof(err);
+    if(getsockopt(handle->backend.socket.fd, SOL_SOCKET, SO_ERROR, &err, &len) == -1)
+        return -1;
+
+    return err; /* 0 = no pending error, >0 = pending errno value */
 }

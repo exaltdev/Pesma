@@ -26,7 +26,7 @@ typedef enum {
 #include "pesma_internal.h"
 
 #ifndef PATH_MAX
-#define PATH_MAX 4096
+    #define PATH_MAX 4096
 #endif
 
 #ifdef __cplusplus
@@ -48,22 +48,22 @@ ssize_t  pesma_udp_recv_from (PHandle* handle, char* out_host, size_t out_len, u
 
 /* Socket general
 General purpose socket operations */
-int  pesma_socket_shutdown (PHandle* handle, int how);          // SHUT_RD, SHUT_WR, SHUT_RDWR
-int  pesma_socket_set_reuseaddr (PHandle* handle, bool enable); // SO_REUSEADDR
-int  pesma_socket_set_nonblock (PHandle* handle);               // SO_NONBLOCk
-int  pesma_socket_set_keepalive (PHandle* handle, bool enable); // TCP keepalive
-int  pesma_socket_set_nodelay (PHandle* handle, bool enable);   // TCP_NODELAY
-int  pesma_socket_get_error (PHandle* handle);                  // getsockopt SO_ERROR
-int  pesma_socket_get_peer (PHandle* handle, char* ip_str, size_t ip_len, uint16_t* port);
-int  pesma_socket_get_local (PHandle* handle, char* ip_str, size_t ip_len, uint16_t* port);
+int pesma_socket_shutdown (PHandle* handle, int how);          // SHUT_RD, SHUT_WR, SHUT_RDWR
+int pesma_socket_set_reuseaddr (PHandle* handle, bool enable); // SO_REUSEADDR
+int pesma_socket_set_nonblock (PHandle* handle, bool enable);  // SO_NONBLOCk
+int pesma_socket_set_keepalive (PHandle* handle, bool enable); // TCP keepalive
+int pesma_socket_set_nodelay (PHandle* handle, bool enable);   // TCP_NODELAY
+int pesma_socket_get_error (PHandle* handle);                  // getsockopt SO_ERROR
+int pesma_socket_get_peer (PHandle* handle, char* ip_str, size_t ip_len, uint16_t* port);
+int pesma_socket_get_local (PHandle* handle, char* ip_str, size_t ip_len, uint16_t* port);
 
 /* File
 Open, read/write, seek, size operations */
-PHandle* pesma_file_open (const char* path, const char* mode);       // open or create file
-PHandle* pesma_fifo_create (const char* path, const char* mode);     // open or create pipe
-off_t    pesma_file_size (PHandle* handle);                          // get file size
-off_t    pesma_file_seek (PHandle* handle, long offset, int whence); // seek in file
-off_t    pesma_file_tell (PHandle* handle);                          // get current file position
+PHandle* pesma_file_open (const char* path, int flags, mode_t mode);  // open or create file
+PHandle* pesma_fifo_open (const char* path, int flags, mode_t mode);  // open or create pipe
+off_t    pesma_file_size (PHandle* handle);                           // get file size
+off_t    pesma_file_seek (PHandle* handle, off_t offset, int whence); // seek in file
+off_t    pesma_file_tell (PHandle* handle);                           // get current file position
 
 /* Memory buffer
 Initializers and read/write into buffers*/
@@ -82,8 +82,8 @@ int   pesma_buffer_clear (PHandle* handle, char type); // clears selected buffer
 
 /* Universal send/recv functions
 Read/write to socket/file/buffer/etc...*/
-ssize_t pesma_send (PHandle* handle, size_t len);
-ssize_t pesma_recv (PHandle* handle, size_t len);
+ssize_t pesma_send (PHandle* handle, size_t len); //Up to n bytes
+ssize_t pesma_recv (PHandle* handle, size_t len); //Up to n bytes
 
 /* Typed read/write helpers
 Write basic types or strings */
@@ -101,7 +101,7 @@ ssize_t pesma_write_float (PHandle* handle, float value);
 ssize_t pesma_write_double (PHandle* handle, double value);
 
 ssize_t pesma_write_char (PHandle* handle, char value);
-ssize_t pesma_write_string (PHandle* handle, const char* str, size_t length);
+ssize_t pesma_write_bytestream (PHandle* handle, const char* str, size_t length);
 
 /* Typed read helpers
 Read basic types or strings */
@@ -119,7 +119,7 @@ ssize_t pesma_read_float (PHandle* handle, float* value);
 ssize_t pesma_read_double (PHandle* handle, double* value);
 
 ssize_t pesma_read_char (PHandle* handle, char* value);
-ssize_t pesma_read_string (PHandle* handle, char* dst, size_t length);
+ssize_t pesma_read_bytestream (PHandle* handle, char* dst, size_t length);
 
 #ifdef __cplusplus
 }

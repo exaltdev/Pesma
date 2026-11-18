@@ -1,4 +1,5 @@
 #include "pesma.h"
+#include <fcntl.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -15,6 +16,7 @@ int tests_read_write(PHandle* handle);
 int tests_file();
 void test_tcp_connect_fail(void);
 void test_tcp_pingpong(void);
+void test_socket_get_error(void);
 
 void printString(char* string);
 void printChar(unsigned char c);
@@ -40,6 +42,9 @@ int main(int argc, char** argv)
         tests_server();
 
     test_tcp_pingpong();
+
+    test_socket_get_error();
+
     return g_failures ? 1 : 0;
 }
 
@@ -110,7 +115,7 @@ void test_rdwr_file()
         printf("File not exists, skipping...\n");
         return;
     }
-    PHandle* handle = pesma_file_open("rwtest.txt", "rwc");
+    PHandle* handle = pesma_file_open("rwtest.txt", O_RDWR | O_CREAT, 0644);
 
     char* str = "Good Luck!";
     char p = '*';
@@ -130,13 +135,13 @@ void test_rdwr_file()
         i64,
         str2);
 
-    pesma_write_string(handle, str, strlen(str));
+    pesma_write_bytestream(handle, str, strlen(str));
     pesma_write_char(handle, p);
     pesma_write_int8(handle, i8);
     pesma_write_uint32(handle, u32);
     pesma_write_uint16(handle, u16);
     pesma_write_int64(handle, i64);
-    pesma_write_string(handle, str2, strlen(str2));
+    pesma_write_bytestream(handle, str2, strlen(str2));
 
     int bytecount = handle->write_buffer.used;
 
@@ -148,7 +153,7 @@ void test_rdwr_file()
     pesma_recv(handle, bytecount);
 
     char buf[1024];
-    pesma_read_string(handle, buf, strlen(str));
+    pesma_read_bytestream(handle, buf, strlen(str));
     buf[strlen(str)] = '\0';
     printf("%s,", buf);
     char c;
@@ -167,7 +172,7 @@ void test_rdwr_file()
     pesma_read_int64(handle, &e);
     printf("%ld,", e);
 
-    pesma_read_string(handle, buf, strlen(str2));
+    pesma_read_bytestream(handle, buf, strlen(str2));
     buf[strlen(str2)] = '\0';
     printf("%s", buf);
 
@@ -189,7 +194,7 @@ void test_read()
         printf("File not exists, skipping...\n");
         return;
     }
-    PHandle* handle = pesma_file_open("readme.txt", "r");
+    PHandle* handle = pesma_file_open("readme.txt", O_RDONLY, 0);
     pesma_recv(handle, 10);
 
     for(int i = 0; i < 10; i++) {
@@ -208,8 +213,8 @@ void test_write()
 {
     printf("[TESTS] File test. Write data to writeme.txt, output: characters:");
 
-    PHandle* handle = pesma_file_open("writeme.txt", "rwc");
-    pesma_write_string(handle, "characters", strlen("characters"));
+    PHandle* handle = pesma_file_open("writeme.txt", O_RDWR | O_CREAT, 0644);
+    pesma_write_bytestream(handle, "characters", strlen("characters"));
     pesma_send(handle, 5);
     pesma_send(handle, 5);
     pesma_write_char(handle, '\n');
@@ -242,20 +247,20 @@ void test_mixed(PHandle* handle)
         i64,
         str2);
 
-    pesma_write_string(handle, str, strlen(str));
+    pesma_write_bytestream(handle, str, strlen(str));
     pesma_write_char(handle, p);
     pesma_write_int8(handle, i8);
     pesma_write_uint32(handle, u32);
     pesma_write_uint16(handle, u16);
     pesma_write_int64(handle, i64);
-    pesma_write_string(handle, str2, strlen(str2));
+    pesma_write_bytestream(handle, str2, strlen(str2));
 
     printf(" [TESTS] Mixed test. outputs in order:");
 
     pesma_buffer_sync(handle);
 
     char buf[1024];
-    pesma_read_string(handle, buf, strlen(str));
+    pesma_read_bytestream(handle, buf, strlen(str));
     buf[strlen(str)] = '\0';
     printf("%s,", buf);
 
@@ -275,7 +280,7 @@ void test_mixed(PHandle* handle)
     pesma_read_int64(handle, &e);
     printf("%ld,", e);
 
-    pesma_read_string(handle, buf, strlen(str2));
+    pesma_read_bytestream(handle, buf, strlen(str2));
     buf[strlen(str2)] = '\0';
     printf("%s", buf);
 
@@ -293,24 +298,24 @@ void test_string(PHandle* handle)
 
     printf("[TESTS] String testing, string input order: %s,%s,%s\n", s1, s2, s3);
 
-    pesma_write_string(handle, s1, strlen(s1));
-    pesma_write_string(handle, s2, strlen(s2));
-    pesma_write_string(handle, s3, strlen(s3));
+    pesma_write_bytestream(handle, s1, strlen(s1));
+    pesma_write_bytestream(handle, s2, strlen(s2));
+    pesma_write_bytestream(handle, s3, strlen(s3));
 
     printf("[TESTS] string testing, tring output order: ");
 
     pesma_buffer_sync(handle);
     char buf[1028];
 
-    pesma_read_string(handle, buf, strlen(s1));
+    pesma_read_bytestream(handle, buf, strlen(s1));
     buf[strlen(s1)] = '\0';
     printf("%s", buf);
     memset(buf, 0, 1028);
-    pesma_read_string(handle, buf, strlen(s2));
+    pesma_read_bytestream(handle, buf, strlen(s2));
     buf[strlen(s2)] = '\0';
     printf("%s", buf);
     memset(buf, 0, 1028);
-    pesma_read_string(handle, buf, strlen(s3));
+    pesma_read_bytestream(handle, buf, strlen(s3));
     buf[strlen(s3)] = '\0';
     printf("%s\n", buf);
     memset(buf, 0, 1028);
@@ -417,12 +422,11 @@ int tests_server(void)
     printf("\n");
     free(buffer);
 
-    char
-        resp[] =
-            "HTTP/1.0 200 OK\r\n" "Server: pesma-c\r\n" "Content-type: text/html\r\n\r\n" "<html>"
-                                                                                          "hello," " world</" "html>\r\n";
+    char resp[] =
+        "HTTP/1.0 200 OK\r\n" "Server: pesma-c\r\n" "Content-type: text/html\r\n\r\n" "<html>" "hel"
+                                                                                               "lo," " world</" "html>\r\n";
 
-    pesma_write_string(client, resp, sizeof(resp) - 1);
+    pesma_write_bytestream(client, resp, sizeof(resp) - 1);
     pesma_send(client, client->write_buffer.used);
 
     pesma_handle_free(client);
@@ -440,8 +444,8 @@ void test_tcp_connect_fail(void)
     printf("[TESTS] TCP connect fail path OK\n\n");
 }
 
-#include <time.h>
 #include <sys/wait.h>
+#include <time.h>
 
 void test_tcp_pingpong(void)
 {
@@ -462,7 +466,7 @@ void test_tcp_pingpong(void)
         /* receive "ping" */
         pesma_recv(c, 64);
         char buf[16] = {0};
-        pesma_read_string(c, buf, 4);
+        pesma_read_bytestream(c, buf, 4);
         if(strncmp(buf, "ping", 4) != 0) {
             pesma_handle_free(c);
             pesma_handle_free(serv);
@@ -470,7 +474,7 @@ void test_tcp_pingpong(void)
         }
 
         /* send "pong" back */
-        pesma_write_string(c, "pong", 4);
+        pesma_write_bytestream(c, "pong", 4);
         pesma_send(c, 4);
 
         pesma_handle_free(c);
@@ -488,12 +492,12 @@ void test_tcp_pingpong(void)
         return;
     }
 
-    pesma_write_string(h, "ping", 4);
+    pesma_write_bytestream(h, "ping", 4);
     pesma_send(h, 4);
 
     pesma_recv(h, 64);
     char buf[16] = {0};
-    pesma_read_string(h, buf, 4);
+    pesma_read_bytestream(h, buf, 4);
     CHECK_EQ(strncmp(buf, "pong", 4) == 0, 1);
 
     pesma_handle_free(h);
@@ -504,4 +508,55 @@ void test_tcp_pingpong(void)
     CHECK_EQ(child_ok, 1);
     if(child_ok)
         printf("[TESTS] TCP ping-pong OK\n\n");
+}
+
+void test_socket_get_error(void)
+{
+    printf("[TESTS] socket_get_error\n");
+
+    /* Non-socket handle → -1 */
+    //TODO: Write comments to indicate testing for failure
+    PHandle* buf = pesma_buffer_create(64);
+    CHECK_EQ(pesma_socket_get_error(buf), -1);
+    pesma_handle_free(buf);
+
+    /* NULL → -1 */
+    //TODO: Write comments to indicate testing for failure
+    CHECK_EQ(pesma_socket_get_error(NULL), -1);
+
+    /* Healthy connected socket → 0. Fork: child = server, parent = client. */
+    pid_t pid = fork();
+    if(pid == 0) {
+        PHandle* serv = pesma_tcp_listen(9091);
+        if(!serv)
+            exit(1);
+        PHandle* c = pesma_tcp_accept(serv);
+        if(!c) {
+            pesma_handle_free(serv);
+            exit(1);
+        }
+        int child_err = pesma_socket_get_error(c);
+        pesma_handle_free(c);
+        pesma_handle_free(serv);
+        exit(child_err == 0 ? 0 : 1);
+    }
+
+    struct timespec ts = {.tv_sec = 0, .tv_nsec = 50000000};
+    nanosleep(&ts, NULL);
+
+    PHandle* h = pesma_tcp_connect("127.0.0.1", 9091);
+    CHECK_EQ(h != NULL, 1);
+    if(!h) {
+        waitpid(pid, NULL, 0);
+        return;
+    }
+
+    CHECK_EQ(pesma_socket_get_error(h), 0);
+
+    pesma_handle_free(h);
+    int status = 0;
+    waitpid(pid, &status, 0);
+    CHECK_EQ(WIFEXITED(status) && WEXITSTATUS(status) == 0, 1);
+
+    printf("[TESTS] socket_get_error OK\n\n");
 }
