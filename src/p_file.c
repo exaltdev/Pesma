@@ -11,19 +11,14 @@
 PHandle* pesma_file_open(const char* path, int flags, mode_t mode)
 {
     int fd;
+    PHandle* handle;
 
     fd = open(path, flags, mode);
     if(fd == -1)
         return NULL;
 
-    PHandle* handle = malloc(sizeof(PHandle));
-    if(handle == NULL) {
-        fprintf(stderr, "[PESMA] malloc fail\n");
-        close(fd);
-        return NULL;
-    }
-    handle->type = P_TYPE_FILE;
-    pesma_internal_buffers_create(handle, FILE_BUFFER_SIZE);
+    handle = pesma_internal_handle_create(P_TYPE_FILE, FILE_BUFFER_SIZE);
+
     handle->backend.file.fd = fd;
     handle->backend.file.path = strdup(path);
     if(!handle->backend.file.path) {
@@ -37,6 +32,8 @@ PHandle* pesma_file_open(const char* path, int flags, mode_t mode)
 
 PHandle* pesma_fifo_open(const char* path, int flags, mode_t mode)
 {
+    PHandle* handle;
+
     if(mkfifo(path, mode) == -1 && errno != EEXIST) {
         return NULL;  //EACCES, ENOENT, etc.
     }
@@ -44,15 +41,8 @@ PHandle* pesma_fifo_open(const char* path, int flags, mode_t mode)
     int fd = open(path, flags);
     if(fd == -1)
         return NULL;
+    handle = pesma_internal_handle_create(P_TYPE_FILE, FILE_BUFFER_SIZE);
 
-    PHandle* handle = malloc(sizeof(PHandle));
-    if(handle == NULL) {
-        fprintf(stderr, "[PESMA] malloc fail\n");
-        close(fd);
-        return NULL;
-    }
-    handle->type = P_TYPE_FIFO;
-    pesma_internal_buffers_create(handle, FILE_BUFFER_SIZE);
     handle->backend.file.fd = fd;
     handle->backend.file.path = strdup(path);
     if(!handle->backend.file.path) {

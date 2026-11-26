@@ -60,18 +60,8 @@ PHandle* pesma_tcp_connect(const char* host, uint16_t port)
         return NULL;
     }
 
-    handle = malloc(sizeof(*handle));
-    if(handle == NULL) {
-        fprintf(stderr, "[PESMA] connect: malloc failed\n");
-        close(sockCli);
-        return NULL;
-    }
+    handle = pesma_internal_handle_create(P_TYPE_SOCKET, P_SOCKET_BUFFER_SIZE);
 
-    memset(handle, 0, sizeof(*handle));
-
-    pesma_internal_buffers_create(handle, P_SOCKET_BUFFER_SIZE);
-
-    handle->type = P_TYPE_SOCKET;
     handle->backend.socket.fd = sockCli;
     memcpy(&handle->backend.socket.addr, &peer_addr, peer_addr_len);
     handle->backend.socket.addr_len = peer_addr_len;
@@ -141,18 +131,8 @@ PHandle* pesma_tcp_listen(uint16_t port)
         return NULL;
     }
 
-    handle = malloc(sizeof(*handle));
-    if(handle == NULL) {
-        fprintf(stderr, "[PESMA] listen: malloc failed\n");
-        close(sockServ);
-        return NULL;
-    }
+    handle = pesma_internal_handle_create(P_TYPE_SOCKET, P_SOCKET_BUFFER_SIZE);
 
-    memset(handle, 0, sizeof(*handle));
-
-    pesma_internal_buffers_create(handle, P_SOCKET_BUFFER_SIZE);
-
-    handle->type = P_TYPE_SOCKET;
     handle->backend.socket.fd = sockServ;
     memcpy(&handle->backend.socket.addr, &bound_addr, bound_addr_len);
     handle->backend.socket.addr_len = bound_addr_len;
@@ -181,17 +161,7 @@ PHandle* pesma_tcp_accept(PHandle* handle)
         return NULL;
     }
 
-    client_handle = malloc(sizeof(*client_handle));
-    if(client_handle == NULL) {
-        fprintf(stderr, "[PESMA] accept: malloc fail\n");
-        close(sockCli);
-        return NULL;
-    }
-
-    memset(client_handle, 0, sizeof(*client_handle));
-    client_handle->type = P_TYPE_SOCKET;
-
-    pesma_internal_buffers_create(client_handle, P_SOCKET_BUFFER_SIZE);
+    client_handle = pesma_internal_handle_create(P_TYPE_SOCKET, P_SOCKET_BUFFER_SIZE);
 
     memcpy(&client_handle->backend.socket.addr, &client_addr, addr_size);
     client_handle->backend.socket.addr_len = addr_size;
@@ -205,8 +175,7 @@ PHandle* pesma_tcp_accept(PHandle* handle)
 
 /* UDP */
 
-
-PHandle* pesma_udp_connect(const char* host, uint16_t port)
+PHandle* pesma_udp_connect (const char* host, uint16_t port)
 {
     (void) host;
     (void) port;
@@ -254,16 +223,23 @@ int pesma_socket_set_reuseaddr(PHandle* handle, bool enable)
 {
     int optval = enable;
     int ret;
+
+    if(!handle || handle->type != P_TYPE_SOCKET)
+        return -1;
+
     ret = setsockopt(handle->backend.socket.fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
     if(ret != 0)
-        perror("Reuseaddr error");
+        fprintf(stderr, "[PESMA] reuseaddr: set/reset error\n");
     return ret;
 }
 
 int pesma_socket_set_keepalive(PHandle* handle, bool enable)
 {
+    if(!handle || handle->type != P_TYPE_SOCKET)
+        return -1;
+
     if(handle->backend.socket.type == P_UDP) {
-        printf("Cannot enable KEEPALIVE on UDP socket");
+        fprintf(stderr, "[PESMA] keepalive: Cannot enable KEEPALIVE on UDP socket\n");
         return -1;
     }
     int optval = enable;
@@ -272,6 +248,9 @@ int pesma_socket_set_keepalive(PHandle* handle, bool enable)
 
 int pesma_socket_set_nonblock(PHandle* handle, bool enable)
 {
+    if(!handle || handle->type != P_TYPE_SOCKET)
+        return -1;
+
     int flags = fcntl(handle->backend.socket.fd, F_GETFL, 0);
     if(flags == -1)
         return -1;
@@ -281,8 +260,11 @@ int pesma_socket_set_nonblock(PHandle* handle, bool enable)
 
 int pesma_socket_set_nodelay(PHandle* handle, bool enable)
 {
+    if(!handle || handle->type != P_TYPE_SOCKET)
+        return -1;
+
     if(handle->backend.socket.type == P_UDP) {
-        printf("[PESMA] set_nodelay: Cannot enable TCP_NODELAY on UDP socket");
+        fprintf(stderr, "[PESMA] set_nodelay: Cannot enable TCP_NODELAY on UDP socket\n");
         return -1;
     }
     int optval = enable;
@@ -291,6 +273,9 @@ int pesma_socket_set_nodelay(PHandle* handle, bool enable)
 
 int pesma_socket_get_peer(PHandle* handle, char* ip_str, size_t ip_len, uint16_t* port)
 {
+    if(!handle || handle->type != P_TYPE_SOCKET)
+        return -1;
+
     struct sockaddr_in* addr = (struct sockaddr_in*) &handle->backend.socket.addr;
     inet_ntop(AF_INET, &addr->sin_addr, ip_str, ip_len);
     if(port)
@@ -300,6 +285,9 @@ int pesma_socket_get_peer(PHandle* handle, char* ip_str, size_t ip_len, uint16_t
 
 int pesma_socket_get_local(PHandle* handle, char* ip_str, size_t ip_len, uint16_t* port)
 {
+    if(!handle || handle->type != P_TYPE_SOCKET)
+        return -1;
+
     struct sockaddr_storage addr;
     socklen_t addr_len = sizeof(addr);
     getsockname(handle->backend.socket.fd, (struct sockaddr*) &addr, &addr_len);

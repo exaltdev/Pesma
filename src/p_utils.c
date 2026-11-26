@@ -11,15 +11,62 @@ PType pesma_handle_get_type(PHandle* handle)
     return handle->type;
 }
 
+PHandle* pesma_internal_handle_create(PType type, size_t buffer_size)
+{
+    PHandle* handle = malloc(sizeof(*handle));
+    if(!handle) {
+        fprintf(stderr, "[PESMA] handle creation: malloc fail\n");
+        return NULL;
+    }
+    memset(handle, 0, sizeof(*handle));
+    handle->type = type;
+    handle->backend.file.fd = -1;
+    handle->backend.socket.fd = -1;
+
+    PBuffer* buff = &(handle->write_buffer);
+    uint8_t* data = calloc(buffer_size, 1);
+    if(data == NULL) {
+        fprintf(stderr, "[PESMA] handle creation: calloc fail\n");
+        pesma_handle_free(handle);
+        return NULL;
+    }
+    buff->data = data;
+    buff->size = buffer_size;
+    buff->used = 0;
+    buff->front = 0;
+    buff->back = 0;
+
+    buff = &(handle->read_buffer);
+    if(type != P_TYPE_BUFFER)
+        data = calloc(buffer_size, 1);
+    if(data == NULL) {
+        fprintf(stderr, "[PESMA] handle creation: calloc fail\n");
+        pesma_handle_free(handle);
+        return NULL;
+    }
+    buff->data = data;
+    buff->size = buffer_size;
+    buff->used = 0;
+    buff->front = 0;
+    buff->back = 0;
+
+    return handle;
+}
+
 int pesma_handle_free(PHandle* handle)
 {
-    //TODO: Cleaner logic here.
+    if(!handle) {
+        return 0;
+    }
+
     if(handle->type == P_TYPE_FILE || handle->type == P_TYPE_FIFO) {
         free(handle->backend.file.path);
-        close(handle->backend.file.fd);
+        if(handle->backend.file.fd != -1)
+            close(handle->backend.file.fd);
     }
     if(handle->type == P_TYPE_SOCKET) {
-        close(handle->backend.socket.fd);
+        if(handle->backend.socket.fd != -1)
+            close(handle->backend.socket.fd);
     }
     free(handle->write_buffer.data);
     if(!(handle->type == P_TYPE_BUFFER))
@@ -45,36 +92,6 @@ int pesma_buffer_clear(PHandle* handle, char type)
     buff->front = 0;
     buff->back = 0;
     return 0;
-}
-
-void pesma_internal_buffers_create(PHandle* handle, size_t size)
-{
-    //TODO(0.2): Clumbersome internal, no error handling for calloc, leaving fprintf for now
-    PBuffer* buff = &(handle->write_buffer);
-    uint8_t* data = calloc(size, 1);
-    if(data == NULL) {
-        fprintf(stderr, "[PESMA] calloc fail\n");
-        return;
-    }
-    buff->data = data;
-    buff->size = size;
-    buff->used = 0;
-    buff->front = 0;
-    buff->back = 0;
-
-    buff = &(handle->read_buffer);
-    if(handle->type != P_TYPE_BUFFER)
-        data = calloc(size, 1);
-    if(data == NULL) {
-        fprintf(stderr, "[PESMA] calloc fail\n");
-        return;
-    }
-    buff->data = data;
-    buff->size = size;
-    buff->used = 0;
-    buff->front = 0;
-    buff->back = 0;
-    return;
 }
 
 /* Universal send/recv functions */
@@ -113,7 +130,7 @@ ssize_t pesma_recv(PHandle* handle, size_t len)
         first = to_read;
 
     ssize_t total = is_socket ? recv(fd, buff->data + buff->front, first, 0)
-                          : read(fd, buff->data + buff->front, first);
+                              : read(fd, buff->data + buff->front, first);
     if(total <= 0)
         return total;
 
@@ -154,7 +171,7 @@ ssize_t pesma_send(PHandle* handle, size_t len)
         first = to_send;
 
     ssize_t total = is_socket ? send(fd, buff->data + buff->back, first, 0)
-                          : write(fd, buff->data + buff->back, first);
+                              : write(fd, buff->data + buff->back, first);
     if(total <= 0)
         return total;
 

@@ -59,7 +59,8 @@ extern "C" {
 #endif
 
 /* Internal helper functions */
-void    pesma_internal_buffers_create (PHandle* handle, size_t size);
+PHandle* pesma_internal_handle_create (PType type, size_t buffer_size);
+
 ssize_t pesma_internal_write (PHandle* handle, size_t type_size, void* value, const char* message);
 ssize_t pesma_internal_read (PHandle* handle, size_t type_size, void* value, const char* message);
 
